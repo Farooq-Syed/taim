@@ -71,27 +71,101 @@ tests/               pytest suite (46 tests)
 results/             CSVs + plots from each evaluation
 ```
 
-## How to run
+## How to use it — step by step
 
-Requires Python 3.12+ with `numpy`, `pandas`, `scipy`, `matplotlib`, `pytest`.
+Requires **Python 3.12+** with `numpy`, `pandas`, `scipy`, `matplotlib`, `scikit-learn`, `pytest`.
+
+### 1. Get the code and install dependencies
 
 ```bash
+git clone https://github.com/Farooq-Syed/taim.git
+cd taim
 pip install -r requirements.txt
-
-# unit + integration tests (46)
-python -m pytest tests/ -q
-
-# Phase 5: regular split vs walk-forward on the tuning environment
-python src/run_evaluation.py
-
-# Phase 6: same config, brand-new unseen environment (no re-tuning)
-python src/final_validation.py
-
-# Anti-overfitting sweep: 60 random environments
-python src/robustness.py
 ```
 
-The 42-day dataset is generated automatically if missing (`python src/data_gen.py`).
+### 2. Verify everything works (46 tests)
+
+```bash
+python -m pytest tests/ -q
+```
+All tests should pass. This covers the generator, the baseline engine, the fusion,
+the ladder, the full pipeline, and the equivalence between the reference and the
+vectorized detector.
+
+### 3. Generate the dataset (if missing)
+
+The 42-day simulated dataset is created automatically when you run an evaluation,
+but you can also generate it explicitly:
+
+```bash
+python src/data_gen.py
+```
+This writes `data/dataset_42d.csv` (~5 MB) — 10 devices, 42 days, 15-min intervals,
+with 5 injected attack windows (volumetric, syn, flood, lowslow, flood).
+
+### 4. Run the Phase-5 evaluation (tuning environment)
+
+```bash
+python src/run_evaluation.py
+```
+Runs the detector over the dataset with both a **regular split** and a **walk-forward**
+test, prints TPR / FPR / F1, per-attack-window detection and time-to-detect, and saves:
+`results/regular_vs_walkforward.csv`, `results/window_metrics.csv`, `results/fold_metrics.csv`
+and a few PNG plots in `results/`.
+
+### 5. Run the Phase-6 unseen-environment validation
+
+```bash
+python src/final_validation.py
+```
+Builds a *brand-new* network (different seed, 15 devices, 56 days, 10-min intervals,
+different attack schedule) and runs the same detector **with no re-tuning**. It prints a
+comparison table (Phase-5 vs unseen) and saves `results/phase6_unseen_comparison.csv`.
+
+### 6. Anti-overfitting sweep (60 random environments)
+
+```bash
+python src/robustness.py
+```
+Generates 60 random networks (random size, interval, noise, diurnal shape, weekend
+behaviour, attack schedules) and measures the detection distribution. Expect median F1
+≈ 0.90, FPR ≈ 0.3%. Results land in `results/robustness_sweep.csv`. This takes a few
+minutes.
+
+### 7. Optional — reproduce the ML experiment
+
+```bash
+python src/ml_experiment.py                 # standard sweep (30 envs)
+python src/ml_experiment.py --strict        # harder sweep with flash crowds
+```
+Runs the A/B/C comparison (current detector vs windowed-mean vs PCA autoencoder). This
+reproduces the documented negative result (the autoencoder's F1 collapses to ~0.05).
+
+### 8. Optional — real-data validation (NSL-KDD)
+
+```bash
+# download the real labeled flow dataset (~19 MB) into data/real/
+curl -L -o data/real/KDDTrain+.txt \
+  "https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTrain%2B.txt"
+
+python src/real_data.py
+```
+Rebuilds a realistic timeline from real flows (normal background + attack bursts) and
+runs the detector on it. See the ML experiment section for the honest caveats about
+matching this 1999-era dataset to the detector's assumptions.
+
+### Where the results go
+
+Every evaluation writes its tables and plots into `results/`:
+
+```
+results/regular_vs_walkforward.csv   Phase-5: regular vs walk-forward comparison
+results/window_metrics.csv           per-attack-window detection + time-to-detect
+results/fold_metrics.csv             walk-forward per-day TPR/FPR
+results/phase6_unseen_comparison.csv Phase-6: unseen vs Phase-5 comparison
+results/robustness_sweep.csv         60-environment sweep detail
+results/*.png                        plots (aggregate traffic, ladder stages, folds)
+```
 
 ## Results
 
