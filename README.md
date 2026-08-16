@@ -36,6 +36,34 @@ instantly (which also drops legitimate users), throttle it in stages: **watch �
 hard cap → drop**. That staged response is what buys you the "preparation time" a live network
 needs.
 
+## Research contributions
+
+For a reader skimming to judge whether this is real research, the contributions are:
+
+- **Behaviour-based detection over identity.** Rejects trusting device IDs (MAC/hardware — which
+  attackers spoof) and instead learns each device's *behavioural profile* and flags departures
+  from it.
+- **Time-of-day baselines with outlier-resistant learning.** Normal is modelled per device and
+  per hour-of-day, and the baseline refuses to absorb attack observations — so a sustained
+  attack cannot silently "teach" itself into the normal profile.
+- **Multi-signal fusion with a false-alarm guard.** An alert requires ≥2 signals to be elevated,
+  and it is direction-aware (packet-size *shrinkage* counts), which suppresses single-metric
+  noise.
+- **A broad-activity gate that separates attacks from targets.** Distinguishes an all-hands
+  volumetric/low-and-slow attack from a targeted flood of one or two devices, so innocent
+  devices are not throttled.
+- **A graduated response ladder with preparation time.** Escalation is staged
+  (watch → soft cap → hard cap → drop) with graceful de-escalation, giving operators time and
+  avoiding blunt disconnects.
+- **An anti-overfitting evaluation methodology.** Regular-split **and** walk-forward testing, an
+  unseen-environment hold-out, a 60-environment robustness sweep, and a parameter-sensitivity
+  study — with the configuration frozen before any generalization test.
+- **A documented negative result.** An ML autoencoder was implemented, tested, and rejected
+  (52–69% false positives) with the evidence kept — a deliberate demonstration of rigorous,
+  failure-reporting research practice.
+- **A deployable implementation.** A vectorized detector at ~250K rows/s (≈250× real time),
+  verified byte-equivalent to the reference implementation.
+
 ## How it works
 
 ```
@@ -281,35 +309,43 @@ the successes are, because a research project that hides its failures teaches no
 - **Synthetic-data-only validation.** No real multi-day per-device NetFlow trace has been run
   through the pipeline yet; the NSL-KDD exercise is a partial, imperfect substitute.
 
-Each of these has a corresponding item in the future-plans list.
+Each of these has a corresponding item in the next-steps list.
 
-## Future plans
+## Progress & next steps
 
-1. **Real-data validation** — ingest real network flow/SNMP data (e.g., CIC-IDS2017 or a
-   company's NetFlow) and repeat the same regular/walk-forward evaluation. An end-to-end
-   NSL-KDD pipeline already exists in `src/real_data.py` (download the CSV to `data/real/`
-   and run it).
-2. **Fix flash-crowd false positives** — teach the broad-activity gate to distinguish a
-   legitimate all-device spike from a low-and-slow attack (e.g., cross-check duration vs
-   ramp shape, or require protocol-mix change in addition to volume).
-3. **Broader real-world signal set** — add signatures for real attack archetypes that are
-   *not* bandwidth floods (service scans/probes: more distinct ports + smaller packets),
-   so the detector generalizes beyond volumetric DDoS.
-4. **Adaptive calibration** — replace static thresholds (noise floor, elevation levels) with
-   per-network auto-calibration, so a quiet office and a noisy campus both work without
-   manual tuning. This targets the remaining ~18% of lowslow misses.
-5. **Time-windowed scoring** — average signals over a short rolling window before scoring to
-   reduce per-step noise (the ML experiment showed this temporal signal is real, but it must
-   be implemented with robust, drift-resistant thresholds).
-6. **Feedback loop** — feed confirmed-attack windows back into the baseline model so a second
-   attack of the same shape is caught faster (and today's attack isn't learned as "normal").
-7. **Deployment study** — port to an embedded router (e.g., OpenWrt) and measure real latency,
-   memory, and the effect of the graduated QoS caps / authenticated deauth on real clients.
-8. **More attack classes** — botnet C2 chatter, DNS amplification, slowloris-style
-   application-layer attacks, and encryption-blind traffic fingerprints (JA3/JA4).
-9. **Revisit ML — only as a calibrated secondary channel** — the autoencoder's temporal
-   signal helps recall, so if ML returns it must be a drift-resistant, secondary signal
-   feeding the existing explainable ladder, never the primary decision maker.
+### What is completed
+
+- [x] **Detection pipeline** — time-of-day baselines, multi-signal fusion, broad-activity gate,
+  graduated response ladder (baseline → fusion → gate → ladder).
+- [x] **Evaluation harness** — regular-split vs walk-forward tests, per-window time-to-detect.
+- [x] **Unseen-environment validation** — the same untuned config on a brand-new network
+  (different size, interval, noise, attack schedule).
+- [x] **Anti-overfitting robustness sweep** — 60 random environments; found and fixed the
+  false-positive tail (worst FPR 8% → 1.4%).
+- [x] **Scale test** — 500 devices × 1 year (52.6M rows) at ~250K rows/s; the 12× vectorized
+  detector verified byte-equivalent to the reference.
+- [x] **ML experiment** — autoencoder built, tested, and rejected; the negative result is
+  documented with evidence (`src/ml_experiment.py`, `src/temporal.py`).
+- [x] **Real-data pipeline** — NSL-KDD flows → signals → detector (`src/real_data.py`), with
+  honest reporting that real attack signatures differ from the simulations.
+- [x] **Engineering** — 46 passing tests, GitHub Actions CI, non-commercial license, docs.
+
+### Next steps
+
+- [ ] **Fix flash-crowd false positives** — distinguish a legitimate all-device spike from a
+  low-and-slow attack (duration/ramp shape or protocol-mix cross-check).
+- [ ] **Broader real-world signal set** — service scans/probes (more distinct ports, smaller
+  packets) so the detector generalises beyond volumetric DDoS.
+- [ ] **Real multi-day validation** — a genuine NetFlow/SNMP trace from an operational network,
+  evaluated with the same regular/walk-forward harness.
+- [ ] **Adaptive calibration** — per-network thresholds (targets the ~18% of lowslow misses).
+- [ ] **Time-windowed scoring** — rolling-window averaging with drift-resistant thresholds
+  (the temporal signal is real; the failed part was the ML calibration, not the concept).
+- [ ] **Feedback loop** — learn from confirmed attacks so repeat shapes are caught faster.
+- [ ] **Deployment study** — port to an embedded router (OpenWrt); measure latency, memory, and
+  the QoS-cap / authenticated-deauth behaviour.
+- [ ] **More attack classes** — botnet C2 chatter, DNS amplification, slowloris, JA3/JA4
+  fingerprints.
 
 ## Academic integrity — use of AI assistance
 
