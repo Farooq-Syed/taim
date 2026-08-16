@@ -1,5 +1,9 @@
 # TAIM — Time-Aware Incident Mitigation
 
+[![CI](https://github.com/Farooq-Syed/taim/actions/workflows/ci.yml/badge.svg)](https://github.com/Farooq-Syed/taim/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 A router-resident network-anomaly detector that watches for **DDoS / man-in-the-middle**
 attacks on a LAN and responds with a *graduated mitigation ladder* instead of instantly
 cutting people off. It learns each device's normal traffic pattern *by time of day*, fuses
@@ -10,6 +14,11 @@ This repo is the full simulation-and-evaluation framework: a synthetic LAN traff
 the detector pipeline, and an honest evaluation harness (regular-split **and** walk-forward
 tests, plus a randomized robustness sweep) that checks for overfitting instead of only
 reporting good numbers on one dataset.
+
+![Aggregate bandwidth with attack windows](results/eval_aggregate_bandwidth.png)
+
+*Aggregate LAN bandwidth over the 42-day evaluation. Shaded bands are injected attack windows —
+the detector learns the daily pattern and escalates only when behaviour genuinely departs from it.*
 
 > **Short version for humans:** I wanted to know whether a router could learn *how its own
 > network behaves* and quietly step in — throttling, not disconnecting — before a flood
