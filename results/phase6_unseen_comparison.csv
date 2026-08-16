@@ -1,0 +1,5 @@
+label,rows,tpr,fpr,precision,f1
+phase5_regular,20160,0.9492,0.0076,0.832,0.8867
+phase5_walkforward,26880,0.9231,0.01,0.806,0.8606
+unseen_regular,60480,0.9077,0.0032,0.8994,0.9035
+unseen_walkforward,90720,0.9313,0.004,0.8917,0.9111

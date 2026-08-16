@@ -1,0 +1,8 @@
+regime,kind,detected,max_stage,ttd_min,to_stage4_min
+regular,flood,True,4,45,105
+regular,lowslow,True,4,45,105
+regular,flood,True,4,45,105
+walk_forward,syn,True,4,45,105
+walk_forward,flood,True,4,45,105
+walk_forward,lowslow,True,4,75,135
+walk_forward,flood,True,4,45,105

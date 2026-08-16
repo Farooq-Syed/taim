@@ -1,0 +1,8 @@
+regime,kind,detected,max_stage,ttd_min,to_stage4_min
+regular,flood,True,4,30,70
+regular,lowslow,True,4,80,120
+regular,flood,True,4,30,70
+walk_forward,volumetric,True,4,30,70
+walk_forward,flood,True,4,30,70
+walk_forward,lowslow,True,4,80,120
+walk_forward,flood,True,4,30,70
