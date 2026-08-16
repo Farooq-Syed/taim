@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Farooq-Syed/taim/actions/workflows/ci.yml/badge.svg)](https://github.com/Farooq-Syed/taim/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-non--commercial-purple)
 
 A router-resident network-anomaly detector that watches for **DDoS / man-in-the-middle**
 attacks on a LAN and responds with a *graduated mitigation ladder* instead of instantly
