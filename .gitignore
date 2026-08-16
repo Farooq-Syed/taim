@@ -14,6 +14,9 @@ htmlcov/
 data/dataset_42d.csv
 data/*.csv
 
+# Third-party real dataset (download to reproduce; not redistributed)
+data/real/
+
 # OS / editor
 .DS_Store
 Thumbs.db

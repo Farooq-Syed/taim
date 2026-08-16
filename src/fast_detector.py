@@ -26,8 +26,10 @@ def _signal_index(name: str) -> int:
 
 
 class FastTaimDetector:
-    def __init__(self, config: DetectorConfig | None = None) -> None:
+    def __init__(self, config: DetectorConfig | None = None,
+                 temporal: "object | None" = None) -> None:
         self.config = config or DetectorConfig()
+        self.temporal = temporal  # optional TemporalScorer; None = unchanged behaviour
         c = self.config
         self.n_signals = len(SIGNAL_LIST)
         self.n_slots = 24  # hour-of-day slots
@@ -172,6 +174,12 @@ class FastTaimDetector:
                 over = a_z > max_z
                 max_z = np.where(over, a_z, max_z)
                 max_z_sig = np.where(over, a_sig, max_z_sig)
+
+            # optional temporal (ML / windowed) scorer augments the score
+            if self.temporal is not None:
+                t_score = self.temporal.step(z, slot)
+                if t_score is not None:
+                    score = np.maximum(score, t_score)
 
             # ---- ladder (vectorized state machine) ----
             inc_high = score > self.score_high

@@ -63,6 +63,7 @@ class SimulationConfig:
     noise_sigma: float = 0.35       # multiplicative noise level of the fleet
     diurnal_peak: float = 14.0      # hour of peak activity
     weekend_factor: float = 0.62    # activity multiplier on weekends
+    flash_crowds: list = field(default_factory=list)  # (start_day, end_day, boost)
     attack_windows: list = field(default_factory=list)
 
     @property
@@ -167,9 +168,19 @@ def generate_dataset(cfg: SimulationConfig) -> tuple[pd.DataFrame, list[AttackWi
         rows.append(df_d)
 
     df = pd.concat(rows, ignore_index=True)
+    tvals = np.arange(n_steps) / spd  # day fraction per step
+
+    # ---- inject legitimate flash crowds (kept as normal, no label) ----
+    for (fc_start, fc_end, boost) in cfg.flash_crowds:
+        in_window = (tvals >= fc_start) & (tvals < fc_end)
+        steps = np.where(in_window)[0]
+        if len(steps) == 0:
+            continue
+        mask = df["timestamp"].isin(timestamps[steps])
+        for col in ("bandwidth_mbps", "conn_rate_ps", "app_req_ps"):
+            df.loc[mask, col] = df.loc[mask, col] * boost
 
     # ---- inject attacks ----
-    tvals = np.arange(n_steps) / spd  # day fraction per step
     for w in cfg.attack_windows:
         in_window = (tvals >= w.start_day) & (tvals < w.end_day)
         steps = np.where(in_window)[0]

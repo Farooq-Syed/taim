@@ -1,14 +1,20 @@
 # TAIM — Time-Aware Incident Mitigation
 
-A router-resident network-anomaly detector that watches for **DDoS / man-in-the-middle** style
-attacks on a LAN and responds with a *graduated mitigation ladder* instead of instantly cutting
-people off. It learns each device's normal traffic pattern *by time of day*, fuses several
-signals to cut false alarms, and escalates responses slowly enough to give operators time.
+A router-resident network-anomaly detector that watches for **DDoS / man-in-the-middle**
+attacks on a LAN and responds with a *graduated mitigation ladder* instead of instantly
+cutting people off. It learns each device's normal traffic pattern *by time of day*, fuses
+several signals to cut false alarms, and escalates responses slowly enough to give operators
+time.
 
 This repo is the full simulation-and-evaluation framework: a synthetic LAN traffic generator,
 the detector pipeline, and an honest evaluation harness (regular-split **and** walk-forward
 tests, plus a randomized robustness sweep) that checks for overfitting instead of only
 reporting good numbers on one dataset.
+
+> **Short version for humans:** I wanted to know whether a router could learn *how its own
+> network behaves* and quietly step in — throttling, not disconnecting — before a flood
+> becomes an outage. The answer so far: yes on a LAN, with honest caveats. The failures are
+> documented as carefully as the successes.
 
 ---
 
@@ -57,6 +63,9 @@ src/
   run_evaluation.py  Phase-5 results (tuning environment)
   final_validation.py Phase-6 results (unseen environment)
   robustness.py      60-environment randomized robustness sweep (anti-overfitting)
+  ml_experiment.py   A/B/C comparison: current vs windowed vs ML autoencoder
+  temporal.py        windowed-mean + PCA-autoencoder temporal scorers
+  real_data.py       real-data pipeline (NSL-KDD flows → signals → detector)
   plot_utils.py      report plots
 tests/               pytest suite (46 tests)
 results/             CSVs + plots from each evaluation
@@ -136,34 +145,108 @@ FPR down to 1.4%.
 live edge router. The vectorized `FastTaimDetector` is verified byte-equivalent (identical
 stages/flags) to the reference implementation.
 
-## Honest limitations
+## Machine-learning experiment (documented negative result)
+
+We tested whether adding an unsupervised ML model would beat the hand-crafted
+detector. Three systems were compared on the same evaluation harness:
+
+- **A** — the current detector (control)
+- **B** — + windowed-mean temporal scorer (non-ML)
+- **C** — + PCA autoencoder over z-score windows (the ML idea)
+
+| test | A F1 | B F1 | C F1 | C FPR |
+|---|---|---|---|---|
+| standard sweep (30 random envs) | 0.864 | 0.858 | **0.082** | 52–69% |
+| strict sweep (25 envs: flash crowds, weaker/noisier) | 0.437 | 0.433 | **0.050** | 52% |
+| real data (NSL-KDD flows) | 0.29 | 0.29 | 0.29 | 1.9% |
+
+**Result: the ML autoencoder was trashed.** Its temporal signal genuinely
+improved lowslow *recall* (91% → 97%) and caught every volumetric/flood/syn
+window — but its reconstruction-error threshold is catastrophically fragile to
+normal traffic drift and legitimate flash crowds, producing a 52–69% false
+positive rate and collapsing F1 to ~0.05. On real NSL-KDD data it added
+nothing. The experiment code is kept in `src/temporal.py`, `src/ml_experiment.py`
+and `src/real_data.py` as evidence.
+
+The strict and real-data tests surfaced two real (non-ML) weaknesses that are
+now the priority:
+
+1. **Legitimate flash crowds get flagged** (FPR 2.5% in the strict sweep) — the
+   broad-activity gate cannot yet distinguish an all-device 2–3× *legit* spike
+   from a low-and-slow attack.
+2. **Real attack signatures differ from the simulated ones** — NSL-KDD attacks
+   show *smaller* packets, *lower* bandwidth and more diverse services, while
+   the detector is tuned to bandwidth-flood DDoS (bandwidth-up + ≥2 signals).
+
+## Current limitations and known failures
+
+These are the things we have *tried and that do not fully work yet* — reported the same way
+the successes are, because a research project that hides its failures teaches nothing:
 
 - **Low-and-slow attacks are the hard case.** `lowslow` (a distributed attack where every
   device only raises traffic ~3×) is detected in ~82% of windows across random environments.
-  It can fall below the statistical noise floor when it lands on naturally quiet traffic, and
-  it's a known boundary case.
-- **Brief targeted attacks** (a single device flooding) can be detected *late* in some
-  environments — detection quality is good, but latency varies.
-- The simulation is synthetic. Real per-device NetFlow/SNMP data would be the next validation
-  step; the detector only needs per-device traffic metrics per interval.
+  When it lands on naturally quiet traffic it can fall below the statistical noise floor, and
+  the baseline can gradually absorb it. This is a genuine, unsolved boundary.
+- **Legitimate flash crowds look like attacks.** A sudden all-device spike (e.g., a product
+  launch) triggers the broad-activity gate, producing ~2.5% false positives in the strict
+  test. Volume alone cannot always separate "everyone is busy" from "everyone is attacked."
+- **Real-world attack signatures differ from our simulations.** On real NSL-KDD flows, attack
+  records show *smaller* packets, *lower* bandwidth and more diverse services — the opposite
+  of our modelled bandwidth floods. The detector is currently tuned to volumetric DDoS.
+- **The ML experiment failed.** Adding an autoencoder improved recall but collapsed precision
+  (52–69% false positives). See the ML section below.
+- **Synthetic-data-only validation.** No real multi-day per-device NetFlow trace has been run
+  through the pipeline yet; the NSL-KDD exercise is a partial, imperfect substitute.
+
+Each of these has a corresponding item in the future-plans list.
 
 ## Future plans
 
 1. **Real-data validation** — ingest real network flow/SNMP data (e.g., CIC-IDS2017 or a
-   company's NetFlow) and repeat the same regular/walk-forward evaluation.
-2. **Adaptive calibration** — replace static thresholds (noise floor, elevation levels) with
-   per-network auto-calibration, so a quiet 20-device office and a noisy 500-device campus are
-   both handled without manual tuning. This targets the remaining 18% lowslow misses.
-3. **Time-windowed scoring** — average signals over a short rolling window before scoring to
-   reduce per-step noise and catch sustained attacks earlier (improves lowslow latency).
-4. **Feedback loop** — feed confirmed-attack windows back into the baseline model so a second
+   company's NetFlow) and repeat the same regular/walk-forward evaluation. An end-to-end
+   NSL-KDD pipeline already exists in `src/real_data.py` (download the CSV to `data/real/`
+   and run it).
+2. **Fix flash-crowd false positives** — teach the broad-activity gate to distinguish a
+   legitimate all-device spike from a low-and-slow attack (e.g., cross-check duration vs
+   ramp shape, or require protocol-mix change in addition to volume).
+3. **Broader real-world signal set** — add signatures for real attack archetypes that are
+   *not* bandwidth floods (service scans/probes: more distinct ports + smaller packets),
+   so the detector generalizes beyond volumetric DDoS.
+4. **Adaptive calibration** — replace static thresholds (noise floor, elevation levels) with
+   per-network auto-calibration, so a quiet office and a noisy campus both work without
+   manual tuning. This targets the remaining ~18% of lowslow misses.
+5. **Time-windowed scoring** — average signals over a short rolling window before scoring to
+   reduce per-step noise (the ML experiment showed this temporal signal is real, but it must
+   be implemented with robust, drift-resistant thresholds).
+6. **Feedback loop** — feed confirmed-attack windows back into the baseline model so a second
    attack of the same shape is caught faster (and today's attack isn't learned as "normal").
-5. **Deployment study** — port to an embedded router (e.g., OpenWrt) and measure real latency,
+7. **Deployment study** — port to an embedded router (e.g., OpenWrt) and measure real latency,
    memory, and the effect of the graduated QoS caps / authenticated deauth on real clients.
-6. **More attack classes** — botnet C2 chatter, DNS amplification, slowloris-style
+8. **More attack classes** — botnet C2 chatter, DNS amplification, slowloris-style
    application-layer attacks, and encryption-blind traffic fingerprints (JA3/JA4).
+9. **Revisit ML — only as a calibrated secondary channel** — the autoencoder's temporal
+   signal helps recall, so if ML returns it must be a drift-resistant, secondary signal
+   feeding the existing explainable ladder, never the primary decision maker.
+
+## Academic integrity — use of AI assistance
+
+This project was developed as part of doctoral research, so the use of AI is disclosed
+honestly here (and should be included in any thesis per the relevant university policy):
+
+- **Conceived and directed by the human.** The core ideas — behaviour-based detection instead
+  of trusting spoofable device IDs, time-of-day baselines, multi-signal fusion, the graduated
+  mitigation ladder, and the anti-overfitting evaluation methodology — were the author's. Every
+  decision about what to build, test, keep, or reject (including rejecting the ML approach and
+  the hardware-ID idea) was made and validated by the author.
+- **AI assisted as a tool.** The `opencode` coding assistant helped translate the design into
+  code, run and debug experiments, profile and vectorize the detector, and draft parts of this
+  documentation. All of its output was reviewed, tested, and edited by the author.
+- **Results are reported with their failures.** No numbers were tuned on test data — the
+  configuration was frozen before the unseen-environment and robustness tests — and the known
+  limitations and the negative ML result are documented alongside the positive results.
 
 ---
 
-*Educational / research project. Simulations and synthetic data only — no real networks or
-attacks were used or harmed.*
+*Educational / research project for doctoral work. Simulations and synthetic data only — no
+real networks or attacks were used or harmed. See "Academic integrity" above for the AI-use
+disclosure.*
