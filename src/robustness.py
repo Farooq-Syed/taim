@@ -11,16 +11,18 @@ from __future__ import annotations
 
 import sys
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, r"C:\Users\Farooq Syed\taim")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 from src.data_gen import AttackWindow, SimulationConfig, generate_dataset
 from src.detector import DetectorConfig
 from src.fast_detector import FastTaimDetector
 
-RESULT_DIR = r"C:\Users\Farooq Syed\taim\results"
+RESULT_DIR = PROJECT_ROOT / "results"
 
 ATTACK_TYPES = ("volumetric", "flood", "syn", "lowslow")
 
@@ -82,6 +84,7 @@ def eval_env(df: pd.DataFrame, windows: list) -> dict:
 
 
 def main(n_envs: int = 60, seed: int = 2026) -> None:
+    RESULT_DIR.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(seed)
     results = []
     t0 = time.time()
@@ -104,7 +107,7 @@ def main(n_envs: int = 60, seed: int = 2026) -> None:
               flush=True)
 
     res = pd.DataFrame(results)
-    res.to_csv(rf"{RESULT_DIR}\robustness_sweep.csv", index=False)
+    res.to_csv(RESULT_DIR / "robustness_sweep.csv", index=False)
 
     print("\n================= ROBUSTNESS SWEEP SUMMARY =================")
     for m in ["tpr", "fpr", "f1", "precision"]:

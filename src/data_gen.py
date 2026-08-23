@@ -22,6 +22,7 @@ Attack types:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -230,7 +231,8 @@ if __name__ == "__main__":
 
     cfg = default_config()
     df, windows = generate_dataset(cfg)
-    out = r"C:\Users\Farooq Syed\taim\data\dataset_42d.csv"
+    out = Path(__file__).resolve().parents[1] / "data" / "dataset_42d.csv"
+    out.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False)
 
     print(f"rows: {len(df)}  devices: {df.device_id.nunique()}  steps: {cfg.n_steps}")

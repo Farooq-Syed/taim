@@ -12,17 +12,20 @@ from __future__ import annotations
 
 import sys
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, r"C:\Users\Farooq Syed\taim")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 from src.data_gen import AttackWindow, SimulationConfig, generate_dataset
 from src.detector import DetectorConfig
 from src.fast_detector import FastTaimDetector
 from src.temporal import PCAWindowScorer, WindowedMeanScorer
 
 ATTACK_TYPES = ("volumetric", "flood", "syn", "lowslow")
+RESULT_DIR = PROJECT_ROOT / "results"
 
 
 def run_with_scorer(df, scorer_cls, train_days=14, **kw):
@@ -113,6 +116,7 @@ def main(n_envs: int = 30, seed: int = 777, strict: bool = False) -> None:
 
     print("\n================ ML EXPERIMENT ================")
     print(f"mode: {'STRICT (flash crowds, weaker/noisier)' if strict else 'standard'}")
+    output_rows = []
     for name, rs in results.items():
         d = pd.DataFrame(rs)
         print(f"\n{name}:")
@@ -123,6 +127,24 @@ def main(n_envs: int = 30, seed: int = 777, strict: bool = False) -> None:
             tot = int(sum(r["tot"][k] for r in rs))
             det = int(sum(r["det"][k] for r in rs))
             print(f"  {k:10s} {det}/{tot} ({det/max(tot,1):.0%})")
+        for result in rs:
+            output_rows.append(
+                {
+                    "mode": "strict" if strict else "standard",
+                    "system": name,
+                    "env": result["env"],
+                    "tpr": result["tpr"],
+                    "fpr": result["fpr"],
+                    "f1": result["f1"],
+                    **{f"{kind}_detected": result["det"][kind] for kind in ATTACK_TYPES},
+                    **{f"{kind}_total": result["tot"][kind] for kind in ATTACK_TYPES},
+                }
+            )
+    RESULT_DIR.mkdir(parents=True, exist_ok=True)
+    mode = "strict" if strict else "standard"
+    output_path = RESULT_DIR / f"ml_experiment_{mode}.csv"
+    pd.DataFrame(output_rows).to_csv(output_path, index=False)
+    print(f"\nresults saved to {output_path.relative_to(PROJECT_ROOT)}")
     print(f"\nelapsed {time.time()-t0:.0f}s")
 
 

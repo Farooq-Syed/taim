@@ -1,7 +1,10 @@
 """Parameter sensitivity: perturb each detector config knob slightly and
 measure the impact on Phase-5 metrics. Shows which knobs are safe vs brittle."""
 import sys
-sys.path.insert(0, r'C:\Users\Farooq Syed\taim')
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 import pandas as pd
 from src.data_gen import default_config, generate_dataset
 from src.fast_detector import FastTaimDetector

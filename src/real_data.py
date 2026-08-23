@@ -1,4 +1,4 @@
-"""Real-data validation on NSL-KDD (real KDD99 tcpdump flows, labeled).
+"""Legacy NSL-KDD benchmark exercise using labeled KDD99-derived records.
 
 NSL-KDD is class-balanced (46.5% attack) and has no per-source IPs, so it does
 not directly match anomaly-detection assumptions. We construct a realistic
@@ -11,24 +11,25 @@ timeline). Signals are derived from the real flow features:
   pkt_size    = mean flow size (proxy; KDD has no per-packet counts)
   app_req     = flows per second (proxy)
 
-This is the closest real-world test the format allows. Caveats are reported
-honestly alongside the numbers.
+This constructed replay is not an intact operational trace and is excluded from
+external-validation claims. Caveats are reported alongside the numbers.
 """
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, r"C:\Users\Farooq Syed\taim")
-from src.data_gen import AttackWindow, SimulationConfig, generate_dataset  # noqa: F401
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 from src.detector import DetectorConfig
 from src.fast_detector import FastTaimDetector
 from src.ml_experiment import eval_env, run_with_scorer
 from src.temporal import PCAWindowScorer, WindowedMeanScorer
 
-KDD = r"C:\Users\Farooq Syed\taim\data\real\KDDTrain+.txt"
+KDD = PROJECT_ROOT / "data" / "real" / "KDDTrain+.txt"
 COLS = ["duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes",
         "land", "wrong_fragment", "urgent", "hot", "num_failed_logins", "logged_in",
         "num_compromised", "root_shell", "su_attempted", "num_root",
@@ -44,6 +45,10 @@ COLS = ["duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes"
 
 def build_timeline(n_bursts: int = 5, bucket_s: int = 60,
                    burst_flows: int = 400, seed: int = 0) -> pd.DataFrame:
+    if not KDD.exists():
+        raise FileNotFoundError(
+            f"NSL-KDD input not found at {KDD}. See README.md for acquisition instructions."
+        )
     df = pd.read_csv(KDD, header=None, names=COLS)
     normal = df[df["label"] == "normal"].reset_index(drop=True)
     attacks = df[df["label"] != "normal"].reset_index(drop=True)
@@ -98,7 +103,7 @@ def run_real(seed: int = 0) -> None:
         "B_windowmean": lambda: run_with_scorer(df, WindowedMeanScorer),
         "C_pca_ae": lambda: run_with_scorer(df, PCAWindowScorer),
     }
-    print("\n================ REAL DATA (NSL-KDD) ================")
+    print("\n=========== LEGACY BENCHMARK REPLAY (NSL-KDD) ===========")
     for name, fn in systems.items():
         out = fn()
         y = out["is_attack"].astype(bool)

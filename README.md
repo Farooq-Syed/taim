@@ -4,11 +4,11 @@
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/license-non--commercial-purple)
 
-A router-resident network-anomaly detector that watches for **DDoS / man-in-the-middle**
-attacks on a LAN and responds with a *graduated mitigation ladder* instead of instantly
+A router-resident network-anomaly detector that watches for **DDoS-like traffic anomalies**
+on a LAN and responds with a *graduated mitigation ladder* instead of instantly
 cutting people off. It learns each device's normal traffic pattern *by time of day*, fuses
 several signals to cut false alarms, and escalates responses slowly enough to give operators
-time.
+time. The present implementation does not detect man-in-the-middle attacks.
 
 This repo is the full simulation-and-evaluation framework: a synthetic LAN traffic generator,
 the detector pipeline, and an honest evaluation harness (regular-split **and** walk-forward
@@ -29,7 +29,7 @@ the detector learns the daily pattern and escalates only when behaviour genuinel
 
 ## Why this project exists
 
-A DDoS or a machine-in-the-middle attack is hard to stop *after* it starts. The original idea
+A DDoS attack is hard to stop *after* it starts. The original idea
 was: instead of trusting a device's ID (MAC/hardware ID — which attackers can spoof), learn how
 each device normally behaves and flag *behaviour*, not identity. And instead of dropping traffic
 instantly (which also drops legitimate users), throttle it in stages: **watch → soft cap →
@@ -61,8 +61,9 @@ For a reader skimming to judge whether this is real research, the contributions 
 - **A documented negative result.** An ML autoencoder was implemented, tested, and rejected
   (52–69% false positives) with the evidence kept — a deliberate demonstration of rigorous,
   failure-reporting research practice.
-- **A deployable implementation.** A vectorized detector at ~250K rows/s (≈250× real time),
-  verified byte-equivalent to the reference implementation.
+- **A tested optimized implementation.** The vectorized detector is covered by equivalence tests
+  against the reference implementation. Router deployability and throughput still require a
+  retained benchmark harness and hardware measurements.
 
 ## How it works
 
@@ -102,9 +103,9 @@ src/
   robustness.py      60-environment randomized robustness sweep (anti-overfitting)
   ml_experiment.py   A/B/C comparison: current vs windowed vs ML autoencoder
   temporal.py        windowed-mean + PCA-autoencoder temporal scorers
-  real_data.py       real-data pipeline (NSL-KDD flows → signals → detector)
+  real_data.py       legacy NSL-KDD benchmark replay adapter
   plot_utils.py      report plots
-tests/               pytest suite (46 tests)
+tests/               pytest suite (48 tests)
 results/             CSVs + plots from each evaluation
 ```
 
@@ -120,7 +121,7 @@ cd taim
 pip install -r requirements.txt
 ```
 
-### 2. Verify everything works (46 tests)
+### 2. Verify everything works (48 tests)
 
 ```bash
 python -m pytest tests/ -q
@@ -176,20 +177,20 @@ python src/ml_experiment.py                 # standard sweep (30 envs)
 python src/ml_experiment.py --strict        # harder sweep with flash crowds
 ```
 Runs the A/B/C comparison (current detector vs windowed-mean vs PCA autoencoder). This
-reproduces the documented negative result (the autoencoder's F1 collapses to ~0.05).
+reproduces the documented negative result (mean autoencoder F1 of 0.061–0.082).
 
-### 8. Optional — real-data validation (NSL-KDD)
+### 8. Optional — legacy benchmark replay (NSL-KDD)
 
 ```bash
-# download the real labeled flow dataset (~19 MB) into data/real/
-curl -L -o data/real/KDDTrain+.txt \
-  "https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTrain%2B.txt"
-
+# Place a lawfully obtained KDDTrain+.txt at data/real/KDDTrain+.txt.
 python src/real_data.py
 ```
-Rebuilds a realistic timeline from real flows (normal background + attack bursts) and
-runs the detector on it. See the ML experiment section for the honest caveats about
-matching this 1999-era dataset to the detector's assumptions.
+This adapter constructs a synthetic timeline from legacy KDD records; it is not a replay of
+an intact operational trace. The [official UNB NSL-KDD page](https://www.unb.ca/cic/datasets/nsl.html)
+states that the dataset is no longer available and is not a perfect representation of existing
+networks. The old result remains documented for historical comparison, but is not counted as
+external operational validation. A current DDoS-focused target is
+[CICDDoS2019](https://www.unb.ca/cic/datasets/ddos-2019.html); its adapter is future work.
 
 ### Where the results go
 
@@ -208,8 +209,9 @@ results/*.png                        plots (aggregate traffic, ladder stages, fo
 
 ### Phase 5 — tuning environment (10 devices, 42 days)
 
-Regular split vs walk-forward gave essentially the **same** result (F1 ≈ 0.86–0.89), which is
-itself a good sign: no warm-up dependence, no leakage. All four attack types were detected and
+Regular split vs walk-forward gave similar aggregate results (F1 ≈ 0.86–0.89), with causal
+score-then-update processing. This is evidence against obvious leakage, not proof that none
+exists. All four attack types were detected and
 escalated to stage 4 (drop), floods within ~45 min.
 
 | regime | TPR | FPR | F1 |
@@ -220,7 +222,8 @@ escalated to stage 4 (drop), floods within ~45 min.
 ### Phase 6 — unseen environment (15 devices, 56 days, different interval/noise/attacks)
 
 Same untuned config. The unseen network performed **as well as or better than** the tuning
-environment — the strongest evidence that the detector generalises.
+environment. This supports synthetic-environment transfer only; it does not establish
+generalisation to operational traffic.
 
 | regime | TPR | FPR | F1 |
 |---|---|---|---|
@@ -245,16 +248,17 @@ environments (FPR up to 8%, F1 as low as 0.11). A *sustained broad-activity gate
 several consecutive steps before escalating) removed the phantom attacks and brought the worst
 FPR down to 1.4%.
 
-### Scale — real-company size
+### Historical scale measurements (not reproduced in this validation)
 
 | network | rows | runtime | throughput | F1 |
 |---|---|---|---|---|
 | 150 devices, 90 days, 5-min | 3.9 M | 21 s | 183 K rows/s | 0.956 |
 | 500 devices, 1 year, 5-min | 52.6 M | 210 s | 250 K rows/s | 0.962 |
 
-0.58 s per day of data means the detector runs ~250× faster than real time — practical for a
-live edge router. The vectorized `FastTaimDetector` is verified byte-equivalent (identical
-stages/flags) to the reference implementation.
+These numbers were recorded during earlier development, but the benchmark harness and raw timing
+records were not retained. They are therefore excluded from the reproduced evidence and must not
+be used as a deployment claim. The current test suite verifies that `FastTaimDetector` produces
+the same stages and flags as the reference implementation.
 
 ## Machine-learning experiment (documented negative result)
 
@@ -265,27 +269,27 @@ detector. Three systems were compared on the same evaluation harness:
 - **B** — + windowed-mean temporal scorer (non-ML)
 - **C** — + PCA autoencoder over z-score windows (the ML idea)
 
-| test | A F1 | B F1 | C F1 | C FPR |
+| test | A mean F1 | B mean F1 | C mean F1 | C mean FPR |
 |---|---|---|---|---|
-| standard sweep (30 random envs) | 0.864 | 0.858 | **0.082** | 52–69% |
-| strict sweep (25 envs: flash crowds, weaker/noisier) | 0.437 | 0.433 | **0.050** | 52% |
-| real data (NSL-KDD flows) | 0.29 | 0.29 | 0.29 | 1.9% |
+| standard sweep (30 random envs) | 0.864 | 0.858 | **0.082** | 68.9% |
+| strict sweep (25 envs: flash crowds, weaker/noisier) | 0.396 | 0.392 | **0.061** | 53.4% |
+| legacy NSL-KDD constructed replay | 0.29 | 0.29 | 0.29 | 1.9% |
 
 **Result: the ML autoencoder was trashed.** Its temporal signal genuinely
 improved lowslow *recall* (91% → 97%) and caught every volumetric/flood/syn
 window — but its reconstruction-error threshold is catastrophically fragile to
-normal traffic drift and legitimate flash crowds, producing a 52–69% false
-positive rate and collapsing F1 to ~0.05. On real NSL-KDD data it added
+normal traffic drift and legitimate flash crowds, producing 53–69% mean false
+positive rates and mean F1 of 0.061–0.082. In the historical NSL-KDD replay it added
 nothing. The experiment code is kept in `src/temporal.py`, `src/ml_experiment.py`
 and `src/real_data.py` as evidence.
 
-The strict and real-data tests surfaced two real (non-ML) weaknesses that are
+The strict and legacy-benchmark tests surfaced two real (non-ML) weaknesses that are
 now the priority:
 
-1. **Legitimate flash crowds get flagged** (FPR 2.5% in the strict sweep) — the
+1. **Legitimate flash crowds get flagged** (mean FPR 3.1% in the strict sweep) — the
    broad-activity gate cannot yet distinguish an all-device 2–3× *legit* spike
    from a low-and-slow attack.
-2. **Real attack signatures differ from the simulated ones** — NSL-KDD attacks
+2. **Legacy benchmark signatures differ from the simulated ones** — NSL-KDD attacks
    show *smaller* packets, *lower* bandwidth and more diverse services, while
    the detector is tuned to bandwidth-flood DDoS (bandwidth-up + ≥2 signals).
 
@@ -299,15 +303,18 @@ the successes are, because a research project that hides its failures teaches no
   When it lands on naturally quiet traffic it can fall below the statistical noise floor, and
   the baseline can gradually absorb it. This is a genuine, unsolved boundary.
 - **Legitimate flash crowds look like attacks.** A sudden all-device spike (e.g., a product
-  launch) triggers the broad-activity gate, producing ~2.5% false positives in the strict
+  launch) triggers the broad-activity gate, producing 3.1% mean false positives in the strict
   test. Volume alone cannot always separate "everyone is busy" from "everyone is attacked."
-- **Real-world attack signatures differ from our simulations.** On real NSL-KDD flows, attack
+- **Legacy benchmark signatures differ from our simulations.** On NSL-KDD records, attack
   records show *smaller* packets, *lower* bandwidth and more diverse services — the opposite
   of our modelled bandwidth floods. The detector is currently tuned to volumetric DDoS.
 - **The ML experiment failed.** Adding an autoencoder improved recall but collapsed precision
   (52–69% false positives). See the ML section below.
-- **Synthetic-data-only validation.** No real multi-day per-device NetFlow trace has been run
-  through the pipeline yet; the NSL-KDD exercise is a partial, imperfect substitute.
+- **No external operational validation.** No real multi-day per-device NetFlow trace has been
+  run through the pipeline; the NSL-KDD constructed replay is a legacy benchmark exercise,
+  not a substitute for deployment evidence.
+- **Temporal false-positive tails remain.** Although aggregate FPR is 1.0% in Phase 5 and 0.4%
+  in Phase 6 walk-forward evaluation, the worst individual folds reach 19.3% and 37.9% FPR.
 
 Each of these has a corresponding item in the next-steps list.
 
@@ -322,13 +329,14 @@ Each of these has a corresponding item in the next-steps list.
   (different size, interval, noise, attack schedule).
 - [x] **Anti-overfitting robustness sweep** — 60 random environments; found and fixed the
   false-positive tail (worst FPR 8% → 1.4%).
-- [x] **Scale test** — 500 devices × 1 year (52.6M rows) at ~250K rows/s; the 12× vectorized
-  detector verified byte-equivalent to the reference.
+- [x] **Implementation equivalence** — the vectorized detector is tested against the reference.
+- [ ] **Reproducible scale benchmark** — retain the harness, environment metadata, raw timings,
+  peak memory, and repeated-trial uncertainty before making throughput or deployment claims.
 - [x] **ML experiment** — autoencoder built, tested, and rejected; the negative result is
   documented with evidence (`src/ml_experiment.py`, `src/temporal.py`).
-- [x] **Real-data pipeline** — NSL-KDD flows → signals → detector (`src/real_data.py`), with
-  honest reporting that real attack signatures differ from the simulations.
-- [x] **Engineering** — 46 passing tests, GitHub Actions CI, non-commercial license, docs.
+- [x] **Legacy benchmark adapter** — NSL-KDD records → constructed timeline → detector
+  (`src/real_data.py`), explicitly excluded from operational-validation claims.
+- [x] **Engineering** — 48 passing tests, GitHub Actions CI, non-commercial license, docs.
 
 ### Next steps
 
@@ -336,8 +344,10 @@ Each of these has a corresponding item in the next-steps list.
   low-and-slow attack (duration/ramp shape or protocol-mix cross-check).
 - [ ] **Broader real-world signal set** — service scans/probes (more distinct ports, smaller
   packets) so the detector generalises beyond volumetric DDoS.
+- [ ] **Current public benchmark** — adapt timestamped CICDDoS2019 flows and report per-family,
+  temporal, and cross-day results with immutable input hashes.
 - [ ] **Real multi-day validation** — a genuine NetFlow/SNMP trace from an operational network,
-  evaluated with the same regular/walk-forward harness.
+  evaluated with the same regular/walk-forward harness and institutional authorization.
 - [ ] **Adaptive calibration** — per-network thresholds (targets the ~18% of lowslow misses).
 - [ ] **Time-windowed scoring** — rolling-window averaging with drift-resistant thresholds
   (the temporal signal is real; the failed part was the ML calibration, not the concept).
@@ -366,6 +376,6 @@ honestly here (and should be included in any thesis per the relevant university 
 
 ---
 
-*Educational / research project for doctoral work. Simulations and synthetic data only — no
-real networks or attacks were used or harmed. See "Academic integrity" above for the AI-use
-disclosure.*
+*Educational / research project for doctoral work. Primary performance claims are based on
+simulation; the legacy NSL-KDD adapter constructs a replay from benchmark records. No live
+networks or attacks were used or harmed. See "Academic integrity" above for the AI-use disclosure.*

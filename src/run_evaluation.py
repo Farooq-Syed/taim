@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, r"C:\Users\Farooq Syed\taim")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 from src.data_gen import default_config, generate_dataset
+from src.detector import DetectorConfig
 from src.evaluate import regular_eval, summarize, walk_forward_eval
 from src.plot_utils import (
     plot_aggregate_signal,
@@ -18,24 +21,23 @@ from src.plot_utils import (
 )
 from src.fast_detector import FastTaimDetector
 
-DATA_CSV = r"C:\Users\Farooq Syed\taim\data\dataset_42d.csv"
-RESULT_DIR = r"C:\Users\Farooq Syed\taim\results"
+DATA_CSV = PROJECT_ROOT / "data" / "dataset_42d.csv"
+RESULT_DIR = PROJECT_ROOT / "results"
 
 
 def load_or_generate() -> tuple[pd.DataFrame, list]:
-    import os
-    from pathlib import Path
-
-    if os.path.exists(DATA_CSV):
+    if DATA_CSV.exists():
         df = pd.read_csv(DATA_CSV, parse_dates=["timestamp"])
         cfg = default_config()
         return df, list(cfg.attack_windows)
     df, windows = generate_dataset(default_config())
+    DATA_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(DATA_CSV, index=False)
     return df, windows
 
 
 def main() -> None:
+    RESULT_DIR.mkdir(parents=True, exist_ok=True)
     df, windows = load_or_generate()
     step = 15
 
@@ -61,7 +63,7 @@ def main() -> None:
             }
         )
     comp = pd.DataFrame(rows)
-    comp.to_csv(rf"{RESULT_DIR}\regular_vs_walkforward.csv", index=False)
+    comp.to_csv(RESULT_DIR / "regular_vs_walkforward.csv", index=False)
     print("\nComparison table saved to results/regular_vs_walkforward.csv")
     print(comp.to_string(index=False))
 
@@ -80,7 +82,7 @@ def main() -> None:
                 }
             )
     wtab = pd.DataFrame(win_rows)
-    wtab.to_csv(rf"{RESULT_DIR}\window_metrics.csv", index=False)
+    wtab.to_csv(RESULT_DIR / "window_metrics.csv", index=False)
     print("\nWindow-level metrics saved to results/window_metrics.csv")
     print(wtab.to_string(index=False))
 
@@ -88,17 +90,17 @@ def main() -> None:
     plot_aggregate_signal(
         df, "bandwidth_mbps", windows,
         "Aggregate bandwidth with attack windows",
-        rf"{RESULT_DIR}\eval_aggregate_bandwidth.png",
+        RESULT_DIR / "eval_aggregate_bandwidth.png",
     )
 
     fold_df = pd.DataFrame(walk["fold_details"])
-    fold_df.to_csv(rf"{RESULT_DIR}\fold_metrics.csv", index=False)
-    plot_fold_metrics(walk["fold_details"], rf"{RESULT_DIR}\eval_fold_performance.png")
+    fold_df.to_csv(RESULT_DIR / "fold_metrics.csv", index=False)
+    plot_fold_metrics(walk["fold_details"], RESULT_DIR / "eval_fold_performance.png")
 
     # ladder behaviour for the flood@[2] device around day 21
     det_out = FastTaimDetector(DetectorConfig()).run(df)
     plot_device_stages(
-        det_out, 2, windows, rf"{RESULT_DIR}\eval_ladder_device2.png",
+        det_out, 2, windows, RESULT_DIR / "eval_ladder_device2.png",
         df["timestamp"].min(),
     )
     print("Plots saved to results/.")

@@ -12,15 +12,17 @@ writes a comparison report.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, r"C:\Users\Farooq Syed\taim")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 from src.data_gen import AttackWindow, SimulationConfig, generate_dataset
 from src.evaluate import regular_eval, summarize, walk_forward_eval
 
-RESULT_DIR = r"C:\Users\Farooq Syed\taim\results"
+RESULT_DIR = PROJECT_ROOT / "results"
 
 
 def unseen_config() -> SimulationConfig:
@@ -41,6 +43,7 @@ def unseen_config() -> SimulationConfig:
 
 
 def main() -> None:
+    RESULT_DIR.mkdir(parents=True, exist_ok=True)
     cfg = unseen_config()
     df, windows = generate_dataset(cfg)
     step = 10
@@ -88,7 +91,7 @@ def main() -> None:
             }
         )
     comp = pd.DataFrame(rows)
-    comp.to_csv(rf"{RESULT_DIR}\phase6_unseen_comparison.csv", index=False)
+    comp.to_csv(RESULT_DIR / "phase6_unseen_comparison.csv", index=False)
     print("\nPhase 6 comparison saved to results/phase6_unseen_comparison.csv")
     print(comp.to_string(index=False))
 
@@ -107,7 +110,7 @@ def main() -> None:
                 }
             )
     wtab = pd.DataFrame(win_rows)
-    wtab.to_csv(rf"{RESULT_DIR}\phase6_unseen_windows.csv", index=False)
+    wtab.to_csv(RESULT_DIR / "phase6_unseen_windows.csv", index=False)
     print("\nUnseen window metrics:")
     print(wtab.to_string(index=False))
 
