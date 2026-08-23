@@ -345,7 +345,8 @@ Each of these has a corresponding item in the next-steps list.
 - [ ] **Broader real-world signal set** — service scans/probes (more distinct ports, smaller
   packets) so the detector generalises beyond volumetric DDoS.
 - [ ] **Current public benchmark** — adapt timestamped CICDDoS2019 flows and report per-family,
-  temporal, and cross-day results with immutable input hashes.
+  temporal, and cross-day results with immutable input hashes. (The adapter is built:
+  `src/cicddos_adapter.py`, CI-tested; running it needs the CICDDoS2019 CSV download.)
 - [ ] **Real multi-day validation** — a genuine NetFlow/SNMP trace from an operational network,
   evaluated with the same regular/walk-forward harness and institutional authorization.
 - [ ] **Adaptive calibration** — per-network thresholds (targets the ~18% of lowslow misses).
