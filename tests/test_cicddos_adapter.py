@@ -1,0 +1,42 @@
+"""Tests for the CICDDoS2019 -> taim windowed-telemetry adapter."""
+
+import tempfile
+from pathlib import Path
+
+import pandas as pd
+
+from src.cicddos_adapter import parse_flows
+
+
+def _write_flows(path: Path) -> None:
+    rows = [
+        # one window: 3 flows from one src IP, all benign
+        {"Timestamp": "2019-01-01 10:00:00", "Src IP": "10.0.0.10", "Dst Port": 443,
+         "Flow Bytes/s": 100000, "Flow Packets/s": 100, "Label": "Benign"},
+        {"Timestamp": "2019-01-01 10:02:00", "Src IP": "10.0.0.10", "Dst Port": 443,
+         "Flow Bytes/s": 200000, "Flow Packets/s": 150, "Label": "Benign"},
+        {"Timestamp": "2019-01-01 10:05:00", "Src IP": "10.0.0.10", "Dst Port": 443,
+         "Flow Bytes/s": 300000, "Flow Packets/s": 200, "Label": "Benign"},
+        # another window: attack flows from a second src IP
+        {"Timestamp": "2019-01-01 10:07:00", "Src IP": "10.0.0.20", "Dst Port": 80,
+         "Flow Bytes/s": 1000000, "Flow Packets/s": 5000, "Label": "SYN"},
+        {"Timestamp": "2019-01-01 10:09:00", "Src IP": "10.0.0.20", "Dst Port": 80,
+         "Flow Bytes/s": 2000000, "Flow Packets/s": 6000, "Label": "SYN"},
+    ]
+    pd.DataFrame(rows).to_csv(path, index=False)
+
+
+def test_parse_flows_schema_and_aggregation():
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "flows.csv"
+        _write_flows(path)
+        frame = parse_flows([path], bucket_min=15)
+        assert {"timestamp", "device_id", "bandwidth_mbps", "conn_rate_ps",
+                "port_div", "pkt_size_mean", "app_req_ps", "is_attack", "attack_type"}.issubset(frame.columns)
+        assert len(frame) == 2  # two (device, bucket) groups
+        benign = frame[frame["is_attack"] == 0].iloc[0]
+        attack = frame[frame["is_attack"] == 1].iloc[0]
+        # attack device has much heavier traffic (real DDoS signal)
+        assert attack["bandwidth_mbps"] > benign["bandwidth_mbps"]
+        assert attack["app_req_ps"] > benign["app_req_ps"]
+        assert attack["attack_type"] == "SYN"
