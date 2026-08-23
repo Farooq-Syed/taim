@@ -17,6 +17,9 @@ data/*.csv
 # Third-party real dataset (download to reproduce; not redistributed)
 data/real/
 
+# Visual verification renders (regen; not committed)
+paper_render/
+
 # OS / editor
 .DS_Store
 Thumbs.db
