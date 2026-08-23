@@ -87,11 +87,42 @@ class FastTaimDetector:
         return sigma
 
     def run(self, df: pd.DataFrame) -> pd.DataFrame:
+        return self._run(df, update=True)
+
+    def run_fold(self, train_df: pd.DataFrame, test_df: pd.DataFrame) -> pd.DataFrame:
+        """Two-phase, fold-isolated run.
+
+        Phase 1 warms the adaptive baseline on the training rows only (the per-device and
+        aggregate means/variances update exactly as a live deployment would before the
+        evaluation window). Phase 2 scores the test rows against that *frozen* baseline with
+        updates disabled, so held-out-family/day telemetry never leaks into the baseline that
+        scores itself. Device identity is held constant across both phases.
+
+        Returns the detector output for the test rows only.
+        """
+        if "device_id" not in train_df.columns or "device_id" not in test_df.columns:
+            raise ValueError("Both train and test frames must carry a 'device_id' column.")
+        cat = pd.concat([train_df["device_id"], test_df["device_id"]])
+        catalog = np.asarray(cat.unique())
+        keys = np.array([str(v) for v in catalog])
+        self._reset_models(len(catalog))
+        # Phase 1: warm on train only (updates on).
+        self._run_phase(train_df, keys, catalog, update=True)
+        # Phase 2: score test against the warmed baseline, updates off.
+        out = self._run_phase(test_df, keys, catalog, update=False)
+        return out
+
+    def _run(self, df: pd.DataFrame, update: bool) -> pd.DataFrame:
+        catalog = np.asarray(df["device_id"].unique())
+        keys = np.array([str(v) for v in catalog])
+        self._reset_models(len(catalog))
+        return self._run_phase(df, keys, catalog, update=update)
+
+    def _run_phase(self, df: pd.DataFrame, dev_keys: np.ndarray,
+                   dev_values: np.ndarray, update: bool) -> pd.DataFrame:
         c = self.config
-        devs = np.sort(df["device_id"].unique())
-        n_dev = len(devs)
-        dev_lookup = {d: i for i, d in enumerate(devs)}
-        self._reset_models(n_dev)
+        dev_lookup = {k: i for i, k in enumerate(dev_keys)}
+        n_dev = len(dev_keys)
 
         # pre-allocate per-timestep arrays
         X = np.empty((self.n_signals, n_dev))
@@ -111,7 +142,7 @@ class FastTaimDetector:
         for ts, g in df.groupby("timestamp", sort=True):
             slot = hour_slot(int(g["weekday"].iloc[0]), int(g["hour"].iloc[0]))[0]
             # build X (signal x device)
-            idx = g["device_id"].map(dev_lookup).to_numpy()
+            idx = g["device_id"].astype(str).map(dev_lookup).to_numpy()
             for si, sig in enumerate(SIGNAL_LIST):
                 X[si, idx] = g[sig].to_numpy()
 
@@ -120,7 +151,7 @@ class FastTaimDetector:
             for si, sig in enumerate(SIGNAL_LIST):
                 agg_vals[si] = X[si, :].mean()
             agg_score, agg_fired, agg_max_z, agg_max_sig = self._score_update_agg(
-                slot, agg_vals
+                slot, agg_vals, update=update
             )
 
             # ---- per-device baseline score-then-update (vectorized) ----
@@ -211,29 +242,29 @@ class FastTaimDetector:
             flagged = stage >= 2
 
             # ---- baseline update (skip outliers) ----
-            upd_mask = (np.abs(z) <= self.outlier_k) & (self.nobs[slot] > 0)
-            resid = X - mu_s
-            new_mu = mu_s + self.alpha * resid
-            new_var = var_s + self.alpha * (resid ** 2 - var_s)
-            self.mu[slot] = np.where(upd_mask, new_mu, mu_s)
-            self.var[slot] = np.where(upd_mask, new_var, var_s)
-            # init for nobs == 0
-            init_mask = self.nobs[slot] == 0
-            self.mu[slot] = np.where(init_mask, X, self.mu[slot])
-            self.var[slot] = np.where(
-                init_mask,
-                np.maximum((0.2 * np.abs(X) + 1e-9) ** 2, self.abs_floor ** 2),
-                self.var[slot],
-            )
-            self.nobs[slot] += 1
-
-            # aggregate baseline update
-            self._update_agg(slot, agg_vals)
+            if update:
+                upd_mask = (np.abs(z) <= self.outlier_k) & (self.nobs[slot] > 0)
+                resid = X - mu_s
+                new_mu = mu_s + self.alpha * resid
+                new_var = var_s + self.alpha * (resid ** 2 - var_s)
+                self.mu[slot] = np.where(upd_mask, new_mu, mu_s)
+                self.var[slot] = np.where(upd_mask, new_var, var_s)
+                # init for nobs == 0
+                init_mask = self.nobs[slot] == 0
+                self.mu[slot] = np.where(init_mask, X, self.mu[slot])
+                self.var[slot] = np.where(
+                    init_mask,
+                    np.maximum((0.2 * np.abs(X) + 1e-9) ** 2, self.abs_floor ** 2),
+                    self.var[slot],
+                )
+                self.nobs[slot] += 1
+                # aggregate baseline update
+                self._update_agg(slot, agg_vals)
 
             actions = np.array(["allow", "watch", "soft_cap_70pct", "hard_cap_30pct",
                                 "drop_deauth"])
             for j in range(n_dev):
-                records.append((ts, int(devs[j]), float(score[j]), int(n_elev[j]),
+                records.append((ts, dev_values[j], float(score[j]), int(n_elev[j]),
                                 bool(fired_eff[j]), int(stage[j]), actions[int(stage[j])],
                                 bool(flagged[j])))
 
@@ -242,7 +273,7 @@ class FastTaimDetector:
         return df.merge(out, on=["timestamp", "device_id"], how="left")
 
     # ---- aggregate model helpers ----
-    def _score_update_agg(self, slot: int, agg_vals: np.ndarray):
+    def _score_update_agg(self, slot: int, agg_vals: np.ndarray, update: bool = True):
         mu = self.agg_mu[slot]
         var = self.agg_var[slot]
         n = self.agg_n[slot]
@@ -265,17 +296,18 @@ class FastTaimDetector:
         score = min(numer / denom, 1.0) if (denom > 0 and fired) else 0.0
         msi = int(np.argmax(np.abs(z))) if n_elev else -1
         a_z = float(np.abs(z).max()) if n_elev else 0.0
-        # update (aggregate absorbs like reference: outlier-excluded)
-        upd = (np.abs(z) <= self.outlier_k) & (n > 0)
-        resid = agg_vals - mu
-        self.agg_mu[slot] = np.where(upd, mu + self.alpha * resid, mu)
-        self.agg_var[slot] = np.where(upd, var + self.alpha * (resid ** 2 - var), var)
-        init = n == 0
-        self.agg_mu[slot] = np.where(init, agg_vals, self.agg_mu[slot])
-        self.agg_var[slot] = np.where(
-            init, np.maximum((0.2 * np.abs(agg_vals) + 1e-9) ** 2, self.abs_floor ** 2),
-            self.agg_var[slot])
-        self.agg_n[slot] += 1
+        if update:
+            # update (aggregate absorbs like reference: outlier-excluded)
+            upd = (np.abs(z) <= self.outlier_k) & (n > 0)
+            resid = agg_vals - mu
+            self.agg_mu[slot] = np.where(upd, mu + self.alpha * resid, mu)
+            self.agg_var[slot] = np.where(upd, var + self.alpha * (resid ** 2 - var), var)
+            init = n == 0
+            self.agg_mu[slot] = np.where(init, agg_vals, self.agg_mu[slot])
+            self.agg_var[slot] = np.where(
+                init, np.maximum((0.2 * np.abs(agg_vals) + 1e-9) ** 2, self.abs_floor ** 2),
+                self.agg_var[slot])
+            self.agg_n[slot] += 1
         return score, fired, a_z, msi
 
     def _update_agg(self, slot: int, agg_vals: np.ndarray) -> None:

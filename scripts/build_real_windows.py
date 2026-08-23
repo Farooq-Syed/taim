@@ -64,7 +64,11 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Build a real CICDDoS2019 windowed dataset.")
     ap.add_argument("--rows-per-family", type=int, default=800_000,
                     help="Max rows sampled per family file (keeps memory bounded).")
-    ap.add_argument("--bucket-min", type=int, default=15)
+    ap.add_argument("--bucket-min", type=int, default=1,
+                    help="Window bucket in minutes. 1 min is the default because each "
+                         "CICDDoS2019 family attack burst lasts only a few minutes; coarser "
+                         "buckets collapse a family's attacks into 1-2 windows and give no "
+                         "per-family test support.")
     ap.add_argument("--output", default="data/cicddos_real_windows.csv")
     ap.add_argument("--zips", nargs="+", default=[DEFAULT_ZIPS[c] for c in CAPTURES],
                     help="Paths to the two capture zips (01-12, 03-11).")
@@ -89,6 +93,7 @@ def main() -> None:
             if len(sample) == 0:
                 continue
             tmp = temp_dir / f"{cap}_{Path(member).stem}.csv"
+            sample["_capture"] = date
             sample.to_csv(tmp, index=False)
             all_parts.append(str(tmp))
             print(f"  captured {cap}/{member}: {len(sample):,} rows")
@@ -98,8 +103,9 @@ def main() -> None:
         return
 
     frame = parse_flows([Path(p) for p in all_parts], args.bucket_min, include_metadata=True)
-    # Normalize the day tag to the capture date (the adapter uses the bucket date).
-    frame["day"] = pd.to_datetime(frame["timestamp"]).dt.date.astype(str)
+    # The capture-day identifier is preserved directly from the source capture (in the
+    # adapter), not re-derived from each file's internal (drifted) timestamps.
+    frame["day"] = frame["capture_id"].astype(str)
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     frame.to_csv(out, index=False)

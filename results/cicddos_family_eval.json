@@ -5,340 +5,340 @@
   "random_state": 42,
   "comparators": {
     "taim": {
-      "recall_at_1pct_fpr": 0.3258,
-      "recall_at_1pct_fpr_ci": 0.2011,
-      "fpr_at_1pct_threshold": 0.1271,
-      "fpr_at_1pct_threshold_ci": 0.0509,
-      "f1": 0.0267,
-      "f1_ci": 0.0173,
-      "precision": 0.0167,
-      "precision_ci": 0.0113,
-      "roc_auc": 0.5768,
-      "roc_auc_ci": 0.1023,
-      "recall": 0.2376,
-      "recall_ci": 0.178,
-      "alerts": 51.5882,
-      "alerts_ci": 8.1011,
-      "pr_auc": 0.0145,
-      "pr_auc_ci": 0.0094
+      "roc_auc": 0.5435,
+      "roc_auc_ci": 0.1082,
+      "recall": 0.5083,
+      "recall_ci": 0.2198,
+      "fpr_at_1pct_threshold": 0.4155,
+      "fpr_at_1pct_threshold_ci": 0.0363,
+      "pr_auc": 0.0431,
+      "pr_auc_ci": 0.0314,
+      "recall_at_1pct_fpr": 0.5103,
+      "recall_at_1pct_fpr_ci": 0.2064,
+      "alerts": 839.5882,
+      "alerts_ci": 76.3255,
+      "f1": 0.0474,
+      "f1_ci": 0.0318,
+      "precision": 0.0261,
+      "precision_ci": 0.0181
     },
     "random_forest": {
-      "recall_at_1pct_fpr": 0.8903,
-      "recall_at_1pct_fpr_ci": 0.1259,
-      "fpr_at_1pct_threshold": 0.0011,
-      "fpr_at_1pct_threshold_ci": 0.0001,
-      "f1": 0.7715,
-      "f1_ci": 0.0493,
-      "precision": 0.7029,
-      "precision_ci": 0.0562,
-      "roc_auc": 0.9989,
-      "roc_auc_ci": 0.0015,
-      "recall": 0.9114,
-      "recall_ci": 0.0979,
-      "alerts": 5.2941,
-      "alerts_ci": 3.3309,
-      "pr_auc": 0.9668,
-      "pr_auc_ci": 0.0301
+      "roc_auc": 0.9915,
+      "roc_auc_ci": 0.01,
+      "recall": 0.9025,
+      "recall_ci": 0.0886,
+      "fpr_at_1pct_threshold": 0.0054,
+      "fpr_at_1pct_threshold_ci": 0.0005,
+      "pr_auc": 0.9558,
+      "pr_auc_ci": 0.0338,
+      "recall_at_1pct_fpr": 0.9193,
+      "recall_at_1pct_fpr_ci": 0.0738,
+      "alerts": 59.7647,
+      "alerts_ci": 46.4464,
+      "f1": 0.7916,
+      "f1_ci": 0.049,
+      "precision": 0.742,
+      "precision_ci": 0.0655
     },
     "isolation_forest": {
-      "f1": 0.421,
-      "f1_ci": 0.0726,
-      "recall": 0.7764,
-      "recall_ci": 0.1595,
-      "alerts": 8.9412,
-      "alerts_ci": 2.612,
-      "precision": 0.3174,
-      "precision_ci": 0.0798
+      "recall": 0.8564,
+      "recall_ci": 0.1481,
+      "alerts": 419.6471,
+      "alerts_ci": 56.1163,
+      "f1": 0.117,
+      "f1_ci": 0.0275,
+      "precision": 0.1051,
+      "precision_ci": 0.0867
     },
     "fixed_rule": {
-      "f1": 0.0194,
-      "f1_ci": 0.0182,
-      "recall": 1.0,
-      "recall_ci": 0.0,
-      "alerts": 582.1176,
-      "alerts_ci": 6.2202,
-      "precision": 0.0101,
-      "precision_ci": 0.0099
+      "recall": 0.976,
+      "recall_ci": 0.0274,
+      "alerts": 1091.5882,
+      "alerts_ci": 72.1036,
+      "f1": 0.0903,
+      "f1_ci": 0.0634,
+      "precision": 0.0533,
+      "precision_ci": 0.0446
     }
   },
   "per_group": [
     {
       "taim": {
-        "f1": 0.05333333333333334,
-        "precision": 0.028169014084507043,
-        "recall": 0.5,
-        "alerts": 71,
-        "pr_auc": 0.007065190705591594,
-        "roc_auc": 0.6234249713631157,
+        "f1": 0.053763440860215055,
+        "precision": 0.028735632183908046,
+        "recall": 0.4166666666666667,
+        "alerts": 522,
+        "pr_auc": 0.021050381679389312,
+        "roc_auc": 0.5252854812398042,
         "recall_at_1pct_fpr": 0.5,
-        "fpr_at_1pct_threshold": 0.23711340206185566
+        "fpr_at_1pct_threshold": 0.4176182707993475
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
-        "recall": 1.0,
-        "alerts": 6,
-        "pr_auc": 1.0,
-        "roc_auc": 1.0,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.875,
+        "precision": 0.7954545454545454,
+        "recall": 0.9722222222222222,
+        "alerts": 44,
+        "pr_auc": 0.9739572965233032,
+        "roc_auc": 0.9960878496767567,
+        "recall_at_1pct_fpr": 0.9722222222222222,
+        "fpr_at_1pct_threshold": 0.004893964110929853
       },
       "isolation_forest": {
-        "f1": 0.5714285714285714,
-        "precision": 0.4,
+        "f1": 0.14257425742574256,
+        "precision": 0.0767590618336887,
         "recall": 1.0,
-        "alerts": 10
+        "alerts": 469
       },
       "fixed_rule": {
-        "f1": 0.0136986301369863,
-        "precision": 0.006896551724137931,
+        "f1": 0.06581352833638025,
+        "precision": 0.034026465028355386,
         "recall": 1.0,
-        "alerts": 580
+        "alerts": 1058
       },
       "_group": "DrDoS_DNS"
     },
     {
       "taim": {
-        "f1": 0.05714285714285714,
-        "precision": 0.030303030303030304,
-        "recall": 0.5,
-        "alerts": 33,
-        "pr_auc": 0.006297496318114874,
-        "roc_auc": 0.6849942726231386,
+        "f1": 0.011472275334608031,
+        "precision": 0.005870841487279843,
+        "recall": 0.25,
+        "alerts": 511,
+        "pr_auc": 0.007117460078147576,
+        "roc_auc": 0.5252854812398042,
         "recall_at_1pct_fpr": 0.5,
-        "fpr_at_1pct_threshold": 0.10996563573883161
+        "fpr_at_1pct_threshold": 0.4176182707993475
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
-        "recall": 1.0,
-        "alerts": 3,
-        "pr_auc": 1.0,
-        "roc_auc": 1.0,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.6875,
+        "precision": 0.55,
+        "recall": 0.9166666666666666,
+        "alerts": 20,
+        "pr_auc": 0.9246666666666666,
+        "roc_auc": 0.9949927496827986,
+        "recall_at_1pct_fpr": 0.9166666666666666,
+        "fpr_at_1pct_threshold": 0.005981511691136488
       },
       "isolation_forest": {
-        "f1": 0.4444444444444444,
-        "precision": 0.2857142857142857,
+        "f1": 0.052980132450331126,
+        "precision": 0.027210884353741496,
         "recall": 1.0,
-        "alerts": 7
+        "alerts": 441
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.022944550669216062,
+        "precision": 0.01160541586073501,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1034
       },
       "_group": "DrDoS_LDAP"
     },
     {
       "taim": {
-        "f1": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "alerts": 43,
-        "pr_auc": 0.002285714285714286,
-        "roc_auc": 0.43871706758304696,
-        "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.018327605956471937
+        "f1": 0.017448200654307525,
+        "precision": 0.008879023307436182,
+        "recall": 0.5,
+        "alerts": 901,
+        "pr_auc": 0.009080248916532002,
+        "roc_auc": 0.5101957585644372,
+        "recall_at_1pct_fpr": 0.5,
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
+        "f1": 0.7804878048780488,
+        "precision": 0.64,
         "recall": 1.0,
-        "alerts": 3,
+        "alerts": 25,
         "pr_auc": 1.0,
         "roc_auc": 1.0,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "fpr_at_1pct_threshold": 0.004893964110929853
       },
       "isolation_forest": {
-        "f1": 0.2857142857142857,
-        "precision": 0.2,
-        "recall": 0.5,
-        "alerts": 5
+        "f1": 0.06971677559912855,
+        "precision": 0.03611738148984198,
+        "recall": 1.0,
+        "alerts": 443
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.030360531309297913,
+        "precision": 0.015414258188824663,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1038
       },
       "_group": "DrDoS_MSSQL"
     },
     {
       "taim": {
-        "f1": 0.10714285714285714,
-        "precision": 0.06818181818181818,
-        "recall": 0.25,
-        "alerts": 44,
-        "pr_auc": 0.03220338983050847,
-        "roc_auc": 0.6715349369988545,
-        "recall_at_1pct_fpr": 0.5,
-        "fpr_at_1pct_threshold": 0.12829324169530354
+        "f1": 0.23255813953488372,
+        "precision": 0.13565891472868216,
+        "recall": 0.813953488372093,
+        "alerts": 1032,
+        "pr_auc": 0.12216364681750372,
+        "roc_auc": 0.6421288743882545,
+        "recall_at_1pct_fpr": 0.75,
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.47058823529411764,
-        "precision": 0.8,
-        "recall": 0.3333333333333333,
-        "alerts": 5,
-        "pr_auc": 0.8350351037851038,
-        "roc_auc": 0.9981863306605575,
-        "recall_at_1pct_fpr": 0.16666666666666666,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.5206611570247934,
+        "precision": 0.9,
+        "recall": 0.36627906976744184,
+        "alerts": 70,
+        "pr_auc": 0.7303571340219402,
+        "roc_auc": 0.92086668690011,
+        "recall_at_1pct_fpr": 0.436046511627907,
+        "fpr_at_1pct_threshold": 0.0065252854812398045
       },
       "isolation_forest": {
-        "f1": 0.5833333333333334,
-        "precision": 0.5833333333333334,
-        "recall": 0.5833333333333334,
-        "alerts": 12
+        "f1": 0.17665615141955837,
+        "precision": 0.19310344827586207,
+        "recall": 0.16279069767441862,
+        "alerts": 145
       },
       "fixed_rule": {
-        "f1": 0.04,
-        "precision": 0.02040816326530612,
-        "recall": 1.0,
-        "alerts": 588
+        "f1": 0.25054945054945055,
+        "precision": 0.14333612740989102,
+        "recall": 0.9941860465116279,
+        "alerts": 1193
       },
       "_group": "DrDoS_NTP"
     },
     {
       "taim": {
-        "f1": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "alerts": 43,
-        "pr_auc": 0.002285714285714286,
-        "roc_auc": 0.43986254295532645,
-        "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.018327605956471937
+        "f1": 0.01639344262295082,
+        "precision": 0.008333333333333333,
+        "recall": 0.5,
+        "alerts": 720,
+        "pr_auc": 0.009010721855130284,
+        "roc_auc": 0.5962479608482871,
+        "recall_at_1pct_fpr": 0.5,
+        "fpr_at_1pct_threshold": 0.279499728113105
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
+        "f1": 0.7272727272727273,
+        "precision": 0.5714285714285714,
         "recall": 1.0,
-        "alerts": 3,
+        "alerts": 21,
         "pr_auc": 1.0,
         "roc_auc": 1.0,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "fpr_at_1pct_threshold": 0.005437737901033171
       },
       "isolation_forest": {
-        "f1": 0.25,
-        "precision": 0.16666666666666666,
-        "recall": 0.5,
-        "alerts": 6
+        "f1": 0.05228758169934641,
+        "precision": 0.026845637583892617,
+        "recall": 1.0,
+        "alerts": 447
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.022944550669216062,
+        "precision": 0.01160541586073501,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1034
       },
       "_group": "DrDoS_NetBIOS"
     },
     {
       "taim": {
-        "f1": 0.02702702702702703,
-        "precision": 0.013888888888888888,
-        "recall": 0.5,
-        "alerts": 72,
-        "pr_auc": 0.00904977375565611,
-        "roc_auc": 0.8745704467353952,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.2508591065292096
+        "f1": 0.01602136181575434,
+        "precision": 0.008344923504867872,
+        "recall": 0.2,
+        "alerts": 719,
+        "pr_auc": 0.014330161374246019,
+        "roc_auc": 0.45620808410367947,
+        "recall_at_1pct_fpr": 0.1,
+        "fpr_at_1pct_threshold": 0.26644915715062534
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
-        "recall": 1.0,
-        "alerts": 3,
-        "pr_auc": 1.0,
-        "roc_auc": 1.0,
+        "f1": 0.8529411764705882,
+        "precision": 0.7631578947368421,
+        "recall": 0.9666666666666667,
+        "alerts": 38,
+        "pr_auc": 0.984738247863248,
+        "roc_auc": 0.9997099873119448,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "fpr_at_1pct_threshold": 0.004893964110929853
       },
       "isolation_forest": {
-        "f1": 0.4,
-        "precision": 0.25,
+        "f1": 0.12121212121212122,
+        "precision": 0.06451612903225806,
         "recall": 1.0,
-        "alerts": 8
+        "alerts": 465
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.05545286506469501,
+        "precision": 0.028517110266159697,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1052
       },
       "_group": "DrDoS_SNMP"
     },
     {
       "taim": {
-        "f1": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "alerts": 43,
-        "pr_auc": 0.030554621848739496,
-        "roc_auc": 0.7147766323024055,
-        "recall_at_1pct_fpr": 0.5,
-        "fpr_at_1pct_threshold": 0.018327605956471937
+        "f1": 0.0431266846361186,
+        "precision": 0.02203856749311295,
+        "recall": 1.0,
+        "alerts": 726,
+        "pr_auc": 0.03206412825651302,
+        "roc_auc": 0.8686786296900489,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.2626427406199021
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
+        "f1": 0.7804878048780488,
+        "precision": 0.64,
         "recall": 1.0,
-        "alerts": 3,
+        "alerts": 25,
         "pr_auc": 1.0,
         "roc_auc": 1.0,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "fpr_at_1pct_threshold": 0.005981511691136488
       },
       "isolation_forest": {
-        "f1": 0.5,
-        "precision": 0.3333333333333333,
+        "f1": 0.06956521739130435,
+        "precision": 0.036036036036036036,
         "recall": 1.0,
-        "alerts": 6
+        "alerts": 444
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.030360531309297913,
+        "precision": 0.015414258188824663,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1038
       },
       "_group": "DrDoS_SSDP"
     },
     {
       "taim": {
-        "f1": 0.041666666666666664,
-        "precision": 0.022727272727272728,
-        "recall": 0.25,
-        "alerts": 44,
-        "pr_auc": 0.057836057265931835,
-        "roc_auc": 0.7150630011454754,
-        "recall_at_1pct_fpr": 0.5,
-        "fpr_at_1pct_threshold": 0.018327605956471937
+        "f1": 0.0935910478128179,
+        "precision": 0.04909284951974386,
+        "recall": 1.0,
+        "alerts": 937,
+        "pr_auc": 0.05281285878300804,
+        "roc_auc": 0.7756933115823818,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.44861337683523655
       },
       "random_forest": {
-        "f1": 0.8888888888888888,
-        "precision": 0.8,
-        "recall": 1.0,
-        "alerts": 5,
-        "pr_auc": 1.0,
-        "roc_auc": 1.0,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.9,
+        "precision": 0.8333333333333334,
+        "recall": 0.9782608695652174,
+        "alerts": 54,
+        "pr_auc": 0.9824119423169936,
+        "roc_auc": 0.9982268245974891,
+        "recall_at_1pct_fpr": 0.9782608695652174,
+        "fpr_at_1pct_threshold": 0.0038064165307232192
       },
       "isolation_forest": {
-        "f1": 0.5714285714285714,
-        "precision": 0.4,
+        "f1": 0.17590822179732313,
+        "precision": 0.09643605870020965,
         "recall": 1.0,
-        "alerts": 10
+        "alerts": 477
       },
       "fixed_rule": {
-        "f1": 0.0136986301369863,
-        "precision": 0.006896551724137931,
+        "f1": 0.08258527827648116,
+        "precision": 0.04307116104868914,
         "recall": 1.0,
-        "alerts": 580
+        "alerts": 1068
       },
       "_group": "DrDoS_UDP"
     },
@@ -347,33 +347,33 @@
         "f1": 0.0,
         "precision": 0.0,
         "recall": 0.0,
-        "alerts": 71,
-        "pr_auc": 0.002285714285714286,
-        "roc_auc": 0.35738831615120276,
+        "alerts": 895,
+        "pr_auc": 0.01022604951560818,
+        "roc_auc": 0.2463295269168026,
         "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.2508591065292096
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
         "f1": 0.8,
-        "precision": 0.6666666666666666,
-        "recall": 1.0,
-        "alerts": 3,
-        "pr_auc": 1.0,
-        "roc_auc": 1.0,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "precision": 0.6923076923076923,
+        "recall": 0.9473684210526315,
+        "alerts": 26,
+        "pr_auc": 0.9238069079093159,
+        "roc_auc": 0.9970521736641769,
+        "recall_at_1pct_fpr": 0.9473684210526315,
+        "fpr_at_1pct_threshold": 0.004350190320826536
       },
       "isolation_forest": {
-        "f1": 0.4,
-        "precision": 0.25,
-        "recall": 1.0,
-        "alerts": 8
+        "f1": 0.07659574468085106,
+        "precision": 0.03991130820399113,
+        "recall": 0.9473684210526315,
+        "alerts": 451
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.035849056603773584,
+        "precision": 0.01825168107588857,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1041
       },
       "_group": "LDAP"
     },
@@ -382,138 +382,138 @@
         "f1": 0.0,
         "precision": 0.0,
         "recall": 0.0,
-        "alerts": 32,
-        "pr_auc": 0.002285714285714286,
-        "roc_auc": 0.4261168384879725,
+        "alerts": 894,
+        "pr_auc": 0.014997321906802356,
+        "roc_auc": 0.2463295269168026,
         "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.10996563573883161
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
-        "recall": 1.0,
-        "alerts": 3,
-        "pr_auc": 1.0,
-        "roc_auc": 1.0,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.84375,
+        "precision": 0.75,
+        "recall": 0.9642857142857143,
+        "alerts": 36,
+        "pr_auc": 0.9651569700460829,
+        "roc_auc": 0.9975044667132758,
+        "recall_at_1pct_fpr": 0.9642857142857143,
+        "fpr_at_1pct_threshold": 0.004893964110929853
       },
       "isolation_forest": {
-        "f1": 0.4444444444444444,
-        "precision": 0.2857142857142857,
+        "f1": 0.1154639175257732,
+        "precision": 0.061269146608315096,
         "recall": 1.0,
-        "alerts": 7
+        "alerts": 457
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.05194805194805195,
+        "precision": 0.02666666666666667,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1050
       },
       "_group": "MSSQL"
     },
     {
       "taim": {
-        "f1": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "alerts": 71,
-        "pr_auc": 0.004561003420752566,
-        "roc_auc": 0.35738831615120276,
-        "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.24971363115693013
+        "f1": 0.05100956429330499,
+        "precision": 0.026172300981461286,
+        "recall": 1.0,
+        "alerts": 917,
+        "pr_auc": 0.019882360246062786,
+        "roc_auc": 0.665647090810223,
+        "recall_at_1pct_fpr": 0.75,
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.6666666666666666,
-        "precision": 0.6,
-        "recall": 0.75,
-        "alerts": 5,
-        "pr_auc": 0.8611111111111112,
-        "roc_auc": 0.9985681557846506,
-        "recall_at_1pct_fpr": 0.75,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.7777777777777778,
+        "precision": 0.7,
+        "recall": 0.875,
+        "alerts": 30,
+        "pr_auc": 0.9239745326940448,
+        "roc_auc": 0.9978022475983325,
+        "recall_at_1pct_fpr": 0.875,
+        "fpr_at_1pct_threshold": 0.0070690592713431215
       },
       "isolation_forest": {
-        "f1": 0.46153846153846156,
-        "precision": 0.3333333333333333,
-        "recall": 0.75,
-        "alerts": 9
+        "f1": 0.07112970711297072,
+        "precision": 0.037444933920704845,
+        "recall": 0.7083333333333334,
+        "alerts": 454
       },
       "fixed_rule": {
-        "f1": 0.0136986301369863,
-        "precision": 0.006896551724137931,
-        "recall": 1.0,
-        "alerts": 580
+        "f1": 0.03936269915651359,
+        "precision": 0.020134228187919462,
+        "recall": 0.875,
+        "alerts": 1043
       },
       "_group": "NetBIOS"
     },
     {
       "taim": {
-        "f1": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "alerts": 71,
-        "pr_auc": 0.006825938566552901,
-        "roc_auc": 0.35738831615120276,
-        "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.24513172966781213
+        "f1": 0.14149139579349904,
+        "precision": 0.07652533609100311,
+        "recall": 0.9367088607594937,
+        "alerts": 967,
+        "pr_auc": 0.08369763492857524,
+        "roc_auc": 0.7607016746856092,
+        "recall_at_1pct_fpr": 0.9746835443037974,
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.8333333333333334,
-        "precision": 0.8333333333333334,
-        "recall": 0.8333333333333334,
-        "alerts": 6,
-        "pr_auc": 0.8645833333333333,
-        "roc_auc": 0.9956090110729287,
-        "recall_at_1pct_fpr": 0.8333333333333334,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.8378378378378378,
+        "precision": 0.8985507246376812,
+        "recall": 0.7848101265822784,
+        "alerts": 69,
+        "pr_auc": 0.9141011068654593,
+        "roc_auc": 0.9839827644358174,
+        "recall_at_1pct_fpr": 0.7848101265822784,
+        "fpr_at_1pct_threshold": 0.004893964110929853
       },
       "isolation_forest": {
-        "f1": 0.375,
-        "precision": 0.3,
-        "recall": 0.5,
-        "alerts": 10
+        "f1": 0.17857142857142858,
+        "precision": 0.10395010395010396,
+        "recall": 0.6329113924050633,
+        "alerts": 481
       },
       "fixed_rule": {
-        "f1": 0.02040816326530612,
-        "precision": 0.010309278350515464,
-        "recall": 1.0,
-        "alerts": 582
+        "f1": 0.11311053984575835,
+        "precision": 0.06066176470588235,
+        "recall": 0.8354430379746836,
+        "alerts": 1088
       },
       "_group": "Portmap"
     },
     {
       "taim": {
-        "f1": 0.04597701149425287,
-        "precision": 0.05714285714285714,
-        "recall": 0.038461538461538464,
-        "alerts": 35,
-        "pr_auc": 0.05484707546563217,
-        "roc_auc": 0.44389373513084857,
-        "recall_at_1pct_fpr": 0.038461538461538464,
-        "fpr_at_1pct_threshold": 0.10882016036655212
+        "f1": 0.020317460317460317,
+        "precision": 0.017660044150110375,
+        "recall": 0.02391629297458894,
+        "alerts": 906,
+        "pr_auc": 0.24765885844007646,
+        "roc_auc": 0.2763147092842263,
+        "recall_at_1pct_fpr": 0.03139013452914798,
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.7317073170731707,
-        "precision": 1.0,
-        "recall": 0.5769230769230769,
-        "alerts": 30,
-        "pr_auc": 0.9589755083769709,
-        "roc_auc": 0.9887655300026433,
-        "recall_at_1pct_fpr": 0.38461538461538464,
-        "fpr_at_1pct_threshold": 0.0
+        "f1": 0.7486033519553073,
+        "precision": 0.9925925925925926,
+        "recall": 0.600896860986547,
+        "alerts": 405,
+        "pr_auc": 0.9594161145685984,
+        "roc_auc": 0.9747706030524486,
+        "recall_at_1pct_fpr": 0.7832585949177877,
+        "fpr_at_1pct_threshold": 0.0065252854812398045
       },
       "isolation_forest": {
-        "f1": 0.4810126582278481,
-        "precision": 0.7037037037037037,
-        "recall": 0.36538461538461536,
-        "alerts": 27
+        "f1": 0.2233502538071066,
+        "precision": 0.7394957983193278,
+        "recall": 0.13153961136023917,
+        "alerts": 119
       },
       "fixed_rule": {
-        "f1": 0.15294117647058825,
-        "precision": 0.08280254777070063,
-        "recall": 1.0,
-        "alerts": 628
+        "f1": 0.5199124726477025,
+        "precision": 0.36757425742574257,
+        "recall": 0.8878923766816144,
+        "alerts": 1616
       },
       "_group": "Syn"
     },
@@ -522,68 +522,68 @@
         "f1": 0.0,
         "precision": 0.0,
         "recall": 0.0,
-        "alerts": 43,
-        "pr_auc": 0.002285714285714286,
-        "roc_auc": 0.4404352806414662,
-        "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.01718213058419244
+        "alerts": 894,
+        "pr_auc": 0.014471978270898007,
+        "roc_auc": 0.3692543901736877,
+        "recall_at_1pct_fpr": 0.11764705882352941,
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
-        "recall": 1.0,
-        "alerts": 3,
-        "pr_auc": 1.0,
-        "roc_auc": 1.0,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "f1": 0.868421052631579,
+        "precision": 0.7857142857142857,
+        "recall": 0.9705882352941176,
+        "alerts": 42,
+        "pr_auc": 0.973389355742297,
+        "roc_auc": 0.9950660525221509,
+        "recall_at_1pct_fpr": 0.9705882352941176,
+        "fpr_at_1pct_threshold": 0.0038064165307232192
       },
       "isolation_forest": {
-        "f1": 0.4444444444444444,
-        "precision": 0.2857142857142857,
+        "f1": 0.13465346534653466,
+        "precision": 0.07218683651804671,
         "recall": 1.0,
-        "alerts": 7
+        "alerts": 471
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.062385321100917435,
+        "precision": 0.032196969696969696,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1056
       },
       "_group": "UDP"
     },
     {
       "taim": {
-        "f1": 0.07792207792207792,
-        "precision": 0.04054054054054054,
+        "f1": 0.08401639344262295,
+        "precision": 0.04385026737967915,
         "recall": 1.0,
-        "alerts": 74,
-        "pr_auc": 0.014018691588785047,
-        "roc_auc": 0.8791523482245132,
-        "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.24169530355097366
+        "alerts": 935,
+        "pr_auc": 0.04425200391019227,
+        "roc_auc": 0.7552421119643496,
+        "recall_at_1pct_fpr": 0.9512195121951219,
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.8571428571428571,
-        "precision": 0.75,
+        "f1": 0.9010989010989011,
+        "precision": 0.82,
         "recall": 1.0,
-        "alerts": 4,
-        "pr_auc": 0.9166666666666666,
-        "roc_auc": 0.9996181748759068,
+        "alerts": 50,
+        "pr_auc": 0.9921263113265382,
+        "roc_auc": 0.9998143211448427,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "fpr_at_1pct_threshold": 0.004893964110929853
       },
       "isolation_forest": {
-        "f1": 0.5,
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "alerts": 9
+        "f1": 0.15748031496062992,
+        "precision": 0.08565310492505353,
+        "recall": 0.975609756097561,
+        "alerts": 467
       },
       "fixed_rule": {
-        "f1": 0.010309278350515464,
-        "precision": 0.0051813471502590676,
+        "f1": 0.07427536231884058,
+        "precision": 0.03857008466603951,
         "recall": 1.0,
-        "alerts": 579
+        "alerts": 1063
       },
       "_group": "UDP-lag"
     },
@@ -592,68 +592,68 @@
         "f1": 0.0,
         "precision": 0.0,
         "recall": 0.0,
-        "alerts": 43,
-        "pr_auc": 0.002285714285714286,
-        "roc_auc": 0.43986254295532645,
+        "alerts": 893,
+        "pr_auc": 0.016051364365971106,
+        "roc_auc": 0.2463295269168026,
         "recall_at_1pct_fpr": 0.0,
-        "fpr_at_1pct_threshold": 0.018327605956471937
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.8,
-        "precision": 0.6666666666666666,
+        "f1": 0.8450704225352113,
+        "precision": 0.7317073170731707,
         "recall": 1.0,
-        "alerts": 3,
+        "alerts": 41,
         "pr_auc": 1.0,
         "roc_auc": 1.0,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "fpr_at_1pct_threshold": 0.005981511691136488
       },
       "isolation_forest": {
-        "f1": 0.4444444444444444,
-        "precision": 0.2857142857142857,
+        "f1": 0.12096774193548387,
+        "precision": 0.06437768240343347,
         "recall": 1.0,
-        "alerts": 7
+        "alerts": 466
       },
       "fixed_rule": {
-        "f1": 0.006896551724137931,
-        "precision": 0.0034602076124567475,
+        "f1": 0.05545286506469501,
+        "precision": 0.028517110266159697,
         "recall": 1.0,
-        "alerts": 578
+        "alerts": 1052
       },
       "_group": "UDPLag"
     },
     {
       "taim": {
-        "f1": 0.044444444444444446,
-        "precision": 0.022727272727272728,
+        "f1": 0.024043715846994537,
+        "precision": 0.012168141592920354,
         "recall": 1.0,
-        "alerts": 44,
-        "pr_auc": 0.009523809523809525,
-        "roc_auc": 0.9404352806414662,
+        "alerts": 904,
+        "pr_auc": 0.013064133016627079,
+        "roc_auc": 0.7740619902120718,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.11912943871706758
+        "fpr_at_1pct_threshold": 0.45187601957585644
       },
       "random_forest": {
-        "f1": 0.6666666666666666,
-        "precision": 0.5,
+        "f1": 0.7096774193548387,
+        "precision": 0.55,
         "recall": 1.0,
-        "alerts": 2,
+        "alerts": 20,
         "pr_auc": 1.0,
         "roc_auc": 1.0,
         "recall_at_1pct_fpr": 1.0,
-        "fpr_at_1pct_threshold": 0.001145475372279496
+        "fpr_at_1pct_threshold": 0.0070690592713431215
       },
       "isolation_forest": {
-        "f1": 0.0,
-        "precision": 0.0,
-        "recall": 0.0,
-        "alerts": 4
+        "f1": 0.049107142857142856,
+        "precision": 0.02517162471395881,
+        "recall": 1.0,
+        "alerts": 437
       },
       "fixed_rule": {
-        "f1": 0.0034602076124567475,
-        "precision": 0.0017331022530329288,
+        "f1": 0.0210727969348659,
+        "precision": 0.010648596321393998,
         "recall": 1.0,
-        "alerts": 577
+        "alerts": 1033
       },
       "_group": "WebDDoS"
     }

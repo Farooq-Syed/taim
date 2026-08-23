@@ -1,86 +1,100 @@
 # Real-data evaluation of TAIM on CICDDoS2019
 
-**Date:** 2026-08-23. Tests the narrow question from the publication roadmap: **does
-TAIM's adaptive, time-aware thresholding remain useful under realistic shift on a real
-public DDoS benchmark, versus simple baselines?**
+**Date:** 2026-08-23 (revision — fold isolation, threshold calibration, day tagging, and a
+substantially larger dataset). Tests the narrow question: **does TAIM's adaptive, time-aware
+thresholding remain useful under realistic shift on a real public DDoS benchmark, versus
+simple baselines?**
 
 ## Data
 
-Official CICDDoS2019 flow captures (CC-BY-4.0, UNB). `scripts/build_real_windows.py`
-streams a bounded per-family sample of the `01-12` (2018-12-01) and `03-11` (2019-03-11)
-captures, adapts them via `src/cicddos_adapter.py` into per-(source-IP, 15-min) signal
-windows, and tags each window with its `family` and capture `day`. Output:
-`data/cicddos_real_windows.csv` — **4,471 real windows, 2 capture days, 17 families**
-(4,367 benign, 104 attack windows).
+Official CICDDoS2019 flow captures (CC-BY-4.0, UNB). `scripts/build_real_windows.py` streams
+a bounded per-family sample of the `01-12` (2018-12-01) and `03-11` (2019-03-11) captures,
+adapts them via `src/cicddos_adapter.py` into per-(source-IP, **1-minute**) signal windows,
+and tags each window with its `family` and the **capture identifier** as `day` (the capture
+the flow belongs to, NOT a re-derived drifted timestamp). Output:
+`data/cicddos_real_windows.csv` — **10,470 real windows, 2 capture days, 17 families**
+(9,195 benign, 1,275 attack windows).
 
-> This is a real-trace windowed evaluation, not a constructed replay. The caveat is that
-> the 15-class mirror is a feature-selected subset; for the full-trace run use the entire
-> capture (see `scripts/download_real_data.py`). The per-device window count is short
-> (~3.2 windows per source-IP), so TAIM's temporal history is thin on this benchmark.
+> The 1-minute bucket is intentional: each CICDDoS2019 family attack burst lasts only a few
+> minutes, so coarser buckets (5+ min) collapse a family's attacks into 1–2 windows and give
+> no per-family test support. At 1 minute, every family has **≥11 attack windows**
+> (Syn 669, DrDoS_NTP 172, Portmap 79, … , WebDDoS 11). The per-device window count is still
+> short (~3.2 windows/source-IP), which is a documented limitation for TAIM's temporal
+> baseline.
 
 ## Protocol
 
-`src/real_cicddos_eval.py` runs a **strict split** (never random rows):
+`src/real_cicddos_eval.py` runs **strict splits** (never random rows):
 
 - **family** — hold out an entire attack family; test = held-out family windows + a 20%
   benign split (benign held out from training).
 - **day** — hold out an entire capture day (train on the other day, test on the held-out day).
 
-Only IsolationForest's `contamination` is tuned on an inner validation split; the
-RandomForest and TAIM operating thresholds are fixed (RF 0.5; the family split's
-recall@1%FPR cutoff is selected on validation, never the test fold). Comparators all see
-the same 5 windowed signals: `bandwidth_mbps`, `conn_rate_ps`, `port_div`, `pkt_size_mean`,
-`app_req_ps` (bandwidth / app_req are log1p-scaled for numerical stability).
+**Fold isolation + calibration (reviewer-corrected).**
 
-## Results — strict family holdout (17 held-out families)
+- **TAIM is fold-isolated** via `FastTaimDetector.run_fold(train, test)`: the adaptive
+  baseline is warmed on the training rows only (updates on), then the test rows are scored
+  against that frozen baseline (updates off). Held-out family/day telemetry never updates the
+  baseline that scores it. Device identity is held constant across both phases.
+- Only IsolationForest's `contamination` is tuned on an inner validation split. The
+  RandomForest decision threshold is fixed at 0.5.
+- The RF and TAIM **recall@FPR cutoffs are selected on a genuine inner validation split** (a
+  fresh model fit on a fit-split and scored on a validation-split, or TAIM's train-warmed
+  score) — never on the test fold.
+- Comparators all see the same 5 windowed signals (`bandwidth_mbps`, `conn_rate_ps`,
+  `port_div`, `pkt_size_mean`, `app_req_ps`; bandwidth/app_req log1p-scaled).
 
-| comparator | F1 | precision | recall | PR-AUC | ROC-AUC | recall @ 1%FPR | alerts |
+## Results — strict family holdout (17 held-out families, every family ≥11 attack windows)
+
+| comparator | F1 (±95%CI) | precision | recall | PR-AUC (±CI) | ROC-AUC (±CI) | recall@1%FPR | alerts |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| **RandomForest (supervised)** | **0.772** | 0.703 | 0.911 | **0.967** | **0.999** | 0.890 | 5.3 |
-| IsolationForest (unsupervised) | 0.421 | 0.317 | 0.776 | — | — | — | 8.9 |
-| TAIM (adaptive) | 0.027 | 0.017 | 0.238 | 0.015 | 0.577 | 0.326 | 51.6 |
-| fixed-rule baseline | 0.019 | 0.010 | 1.000 | — | — | — | 582 |
+| **RandomForest (supervised)** | **0.792 (±0.049)** | 0.742 | 0.902 | **0.956 (±0.034)** | **0.992 (±0.010)** | 0.919 | ~5 |
+| IsolationForest (unsupervised) | 0.117 (±0.028) | 0.105 | 0.856 | — | — | — | ~9 |
+| fixed-rule baseline | 0.090 (±0.063) | 0.053 | 0.976 | — | — | — | ~580 |
+| TAIM (adaptive, fold-isolated) | 0.047 (±0.032) | 0.026 | 0.508 | 0.043 (±0.031) | 0.544 (±0.108) | 0.510 | ~50 |
 
-Per-family supervised RF: F1 0.47–0.89, ROC-AUC 0.99–1.00 across all 17 families; TAIM F1
-0.00–0.11 across all 17.
+Per-family supervised RF: F1 0.52–0.90 and ROC-AUC 0.92–1.00 across all 17 families; TAIM F1
+0.00–0.23 across all 17.
 
-## Results — strict day holdout (2 capture days)
+## Results — strict day holdout (2 capture days, correct tags)
 
-| comparator | F1 | PR-AUC | ROC-AUC | recall @ 1%FPR | alerts |
-|---|:--:|:--:|:--:|:--:|:--:|
-| **RandomForest (supervised)** | **0.762** | 0.895 | 0.970 | 0.532 | 31.5 |
-| IsolationForest (unsupervised) | 0.638 | — | — | — | 73.5 |
-| TAIM (adaptive) | 0.058 | 0.031 | 0.535 | 0.347 | 146.5 |
-| fixed-rule baseline | 0.071 | — | — | — | 1497.5 |
+| comparator | F1 | PR-AUC | ROC-AUC | recall@1%FPR |
+|---|:--:|:--:|:--:|:--:|
+| **RandomForest (supervised)** | **0.70** | — | 0.92 | — |
+| TAIM (adaptive, fold-isolated) | 0.18 | — | ~0.55 | — |
+
+(Per-day: RF F1 0.79/0.62, AUC 0.96/0.88; TAIM F1 0.17/0.20. Day-holdout n=2, so the day CI is
+wide; the family holdout is the primary evidence.)
 
 ## Structural diagnostic (why TAIM is near-chance here)
 
 TAIM is a **temporal** detector: it learns a per-device baseline over time and fires on
 sustained deviations. On CICDDoS2019 the per-family captures are short bursts with only
 **~3.2 windows per source-IP**, so there is essentially no per-device history for TAIM's
-baseline (and no time-of-day regime) — its in-domain score already separates poorly (mean
-score 0.081 on attack vs 0.099 on benign; flags 4/104 attack windows). IsolationForest and
-RandomForest are *snapshot* models and don't need that history. This is a genuine property
-of the benchmark + method, not a config artifact; it is reported honestly.
+baseline (and no time-of-day regime). Even with fold isolation, TAIM's score separates
+attacks poorly (ROC-AUC ≈ 0.54 on held-out families, and its recall@1%FPR cutoff hits an FPR
+of ~0.42 — i.e. the score orders attacks no better than chance). IsolationForest and
+RandomForest are snapshot models that do not need that history. This is a genuine property of
+the benchmark + method, not a config artifact.
+
+Additionally, TAIM's internal state is not re-run deterministic across separate process
+invocations (a pre-existing property, unrelated to the fold-isolation fix), so exact-score
+reprocessing should not be assumed; the reported aggregates use a fixed evaluation pass.
 
 ## Narrow claim
 
 > On real CICDDoS2019 with strict family/day holdouts, **adaptive time-aware thresholding
-> (TAIM) does not remain useful under distribution shift**: it is near-chance
-> (ROC-AUC ≈ 0.58, PR-AUC ≈ 0.02) on unseen families, while a supervised baseline
-> generalizes strongly (RF ROC-AUC 0.999, F1 0.77). TAIM's per-device temporal baseline
-> has no purchase on short, family-isolated flows. This is not a deployment-level claim;
-> it is a benchmark-transfer finding.
+> (TAIM) does not remain useful under distribution shift**: it is near-chance (ROC-AUC ≈ 0.54,
+> PR-AUC ≈ 0.04) on unseen families, while a supervised baseline generalizes strongly
+> (RF F1 0.79, ROC-AUC 0.99). TAIM's per-device temporal baseline has no purchase on short,
+> family-isolated flows. This is a benchmark-transfer finding, not a deployment-level claim.
 
 ## Reproduce
 
 ```bash
-# 1. Download the official captures (needs HF mirror; see scripts/download_real_data.py)
-python scripts/download_real_data.py --zips-bencorn   # -> data/real/csvs/*.zip
-# 2. Build the windowed dataset
-python scripts/build_real_windows.py --rows-per-family 700000 --bucket-min 15 \
+python scripts/download_real_data.py --zips-bencorn          # data/real/csvs/*.zip
+python scripts/build_real_windows.py --rows-per-family 1000000 --bucket-min 1 \
     --output data/cicddos_real_windows.csv
-# 3. Strict family and day holdouts
 python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split family \
     --metrics-output results/cicddos_family_eval.json
 python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split day \
@@ -89,10 +103,10 @@ python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split da
 
 ## Honest limits
 
-- The windowed dataset is a bounded per-family sample, not the full 22 GB trace; the
-  family/day splits are real but on a subset.
+- This is a bounded per-family sample, not the full 22 GB trace; splits are real but on a
+  subset of each capture.
 - Only 2 capture days → the day-holdout CI is wide (n=2); the family-holdout (n=17) is the
   primary evidence.
 - TAIM's poor result is partly benchmark-structural (very short per-device history), so it
-  should be read as "TAIM does not transfer to this benchmark," not "TAIM is useless."
-  A longer-horizon real trace (e.g. LANL or a multi-day capture) is the correct next test.
+  should be read as "TAIM does not transfer to this benchmark," not "TAIM is useless." A
+  longer-horizon real trace (e.g. LANL or a multi-day capture) is the correct next test.

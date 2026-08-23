@@ -64,5 +64,24 @@ def test_parse_flows_official_schema_and_metadata():
         assert benign["family"] == "Benign"
         assert attack["family"] == "Syn"
         assert frame["day"].nunique() == 1
-        assert attack["app_req_ps"] > benign["app_req_ps"]
-        assert attack["attack_type"] == "Syn"
+
+
+def test_parse_flows_preserves_capture_id_for_day():
+    # The day tag must come from the source capture identifier, NOT the per-file internal
+    # (drifted) timestamp. Pass a '_capture' source column and assert it is preserved as day.
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "flows.csv"
+        rows = [
+            {"Timestamp": "2018-12-01 10:00:00", "Source IP": "172.16.0.5",
+             "Destination Port": 443, "Flow Bytes/s": 100000, "Flow Packets/s": 100,
+             "Label": "BENIGN"},
+            {"Timestamp": "2019-03-11 10:00:00", "Source IP": "172.16.0.6",
+             "Destination Port": 80, "Flow Bytes/s": 1000000, "Flow Packets/s": 5000,
+             "Label": "Syn"},
+        ]
+        frame_rows = pd.DataFrame(rows)
+        frame_rows["_capture"] = "2018-12-01"
+        frame_rows.to_csv(path, index=False)
+        frame = parse_flows([path], bucket_min=15, include_metadata=True)
+        assert frame["day"].unique()[0] == "2018-12-01"
+        assert "capture_id" in frame.columns

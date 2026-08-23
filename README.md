@@ -199,18 +199,21 @@ under **strict family/day holdouts** against simple baselines:
 ```bash
 # 1. Download the official captures (HF mirror; CC-BY-4.0)
 python scripts/download_real_data.py
-# 2. Build the windowed dataset (bounded per-family sample)
-python scripts/build_real_windows.py --rows-per-family 700000 --bucket-min 15 \
+# 2. Build the windowed dataset (bounded per-family sample; 1-min buckets so each family
+#    burst yields enough windows for per-family test support)
+python scripts/build_real_windows.py --rows-per-family 1000000 --bucket-min 1 \
     --output data/cicddos_real_windows.csv
-# 3. Strict-split evaluation (TAIM vs RF vs IF vs fixed-rule)
+# 3. Strict-split evaluation (TAIM vs RF vs IF vs fixed-rule; TAIM is fold-isolated)
 python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split family
 python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split day
 ```
 
-Result (headline): on unseen families, **TAIM is near-chance** (ROC-AUC ~0.58, PR-AUC ~0.02)
-while a supervised RandomForest generalizes (ROC-AUC 0.999, F1 0.772). TAIM's per-device
-temporal baseline has no purchase on short, family-isolated flows. See
-[REAL_DATA_RESULTS.md](REAL_DATA_RESULTS.md) for the full tables and honest limits.
+Result (headline, family holdout n=17): on unseen families, **TAIM is near-chance**
+(ROC-AUC ~0.54, PR-AUC ~0.04, F1 0.05) while a supervised RandomForest generalizes
+(ROC-AUC 0.99, F1 0.79). TAIM is **fold-isolated** (baseline warmed on train, test scored
+frozen) and its recall@FPR cutoff is validated, not test-tuned. The temporal baseline has no
+purchase on short, family-isolated flows. See [REAL_DATA_RESULTS.md](REAL_DATA_RESULTS.md) for
+the full tables and honest limits.
 
 ### Where the results go
 

@@ -44,6 +44,10 @@ def parse_flows(paths: list[Path], bucket_min: int = 15, include_metadata: bool 
         df["label_raw"] = df["Label"].astype(str).str.strip()
         df["is_benign"] = df["label_raw"].str.lower().eq("benign")
         df["family"] = _family_from_label(df[["label_raw", "is_benign"]])
+        # A source capture identifier (e.g. loaded from a 'capture_id' column) is preserved
+        # so a window can be tagged by its true capture day, not a re-derived timestamp.
+        if "_capture" in df.columns:
+            df["capture_id"] = df["_capture"].astype(str)
         frames.append(df)
     data = pd.concat(frames, ignore_index=True)
     data = data.dropna(subset=["@timestamp"])
@@ -71,7 +75,13 @@ def parse_flows(paths: list[Path], bucket_min: int = 15, include_metadata: bool 
         }
         if include_metadata:
             row["family"] = "Benign" if not has_attack else attack_type
-            row["day"] = bucket.date().isoformat()
+            # Use the source capture identifier when available; else fall back to the
+            # window's own date.
+            if "capture_id" in group.columns:
+                row["capture_id"] = group["capture_id"].iloc[0]
+            else:
+                row["capture_id"] = bucket.date().isoformat()
+            row["day"] = row["capture_id"]
         rows.append(row)
     return pd.DataFrame(rows)
 
