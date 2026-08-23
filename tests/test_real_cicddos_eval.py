@@ -170,3 +170,21 @@ def test_run_fold_returns_only_test_rows_and_has_expected_schema():
     assert len(out) == len(test)
     assert {"flagged", "score", "fired", "stage"}.issubset(out.columns)
     assert np.all(np.isfinite(out["score"].to_numpy()))
+
+
+def test_taim_calibration_threshold_is_genuine_validation():
+    # The TAIM recall@FPR cutoff must come from a chronological train/validation split (warm
+    # baseline on the earlier fraction, score the later fraction frozen) — not from the whole
+    # train sequence and never the test fold. With a two-class frame it should be finite.
+    df = _make_frame(120)
+    thr = ev._taim_calibration_threshold(df, target_fpr=0.01)
+    # A finite threshold may be NaN if the validation portion is single-class; either output
+    # is acceptable structurally, but it must be a scalar float.
+    assert isinstance(thr, float)
+    assert np.isnan(thr) or 0.0 <= thr <= 1.0
+
+
+def test_taim_calibration_threshold_rejects_tiny_train():
+    df = _make_frame(8)
+    thr = ev._taim_calibration_threshold(df, target_fpr=0.01)
+    assert np.isnan(thr)

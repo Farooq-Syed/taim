@@ -107,27 +107,48 @@ def _fit_taim(train_df: pd.DataFrame, test_df: pd.DataFrame) -> tuple[np.ndarray
     return flagged, score
 
 
-def _taim_train_score(df: pd.DataFrame) -> np.ndarray:
-    """Warm the TAIM baseline on `df` and return its per-row score over those rows.
+def _taim_calibration_threshold(train_df: pd.DataFrame, target_fpr: float,
+                                warm_frac: float = 0.75) -> float:
+    """TAIM recall@FPR cutoff from a GENUINE chronological train/validation split.
 
-    Used only to calibrate the TAIM cutoff against TRAINING labels; the returned score is
-    a warm-up pass over train data, and is never mixed with test telemetry.
+    TAIM is stateful and cannot be re-fit per fold, so the train timeline is split
+    chronologically: the baseline is warmed on the EARLIER fraction (update on), the LATER
+    fraction is scored against that frozen baseline (update off), and the cutoff is picked on
+    that validation portion. The test fold is never used, and the calibration scores come from
+    a portion of the train sequence that was NOT part of the warm-up, so this is a genuine
+    out-of-warm-up operating point rather than an in-sample calibration.
+
+    Returns NaN when the validation portion is single-class (no meaningful threshold).
     """
-    devs = df["device_id"].astype(str).unique()
-    dev_map = {d: i for i, d in enumerate(devs)}
-    frame = df.copy()
-    frame["device_id"] = df["device_id"].astype(str).map(dev_map)
+    train_df = train_df.sort_values("timestamp")
+    if len(train_df) < 4:
+        return float("nan")
+    boundary = int(len(train_df) * warm_frac)
+    if boundary < 1 or boundary >= len(train_df):
+        return float("nan")
+    warm = train_df.iloc[:boundary]
+    val = train_df.iloc[boundary:]
+
+    # Build a shared device catalog across warm + val so the frozen phase reuses the warmed
+    # per-device baseline for the same device ids.
+    cat = pd.concat([warm["device_id"].astype(str), val["device_id"].astype(str)]).unique()
+    dev_map = {d: i for i, d in enumerate(cat)}
+    warm_x = warm.copy()
+    warm_x["device_id"] = warm["device_id"].astype(str).map(dev_map)
+    val_x = val.copy()
+    val_x["device_id"] = val["device_id"].astype(str).map(dev_map)
     import warnings as _w
 
     with _w.catch_warnings():
         _w.simplefilter("ignore")
-        out = FastTaimDetector(DetectorConfig()).run(frame)
-    score = out["score"].to_numpy(dtype=float)
-    if not np.all(np.isfinite(score)):
-        finite = score[np.isfinite(score)]
+        out = FastTaimDetector(DetectorConfig()).run_fold(warm_x, val_x)
+    val_score = out["score"].to_numpy(dtype=float)
+    if not np.all(np.isfinite(val_score)):
+        finite = val_score[np.isfinite(val_score)]
         floor = float(finite.min()) if len(finite) else 0.0
-        score = np.where(np.isfinite(score), score, floor)
-    return score
+        val_score = np.where(np.isfinite(val_score), val_score, floor)
+    y_val = val["is_attack"].to_numpy(dtype=int)
+    return _pick_threshold_on_validation(y_val, val_score, target_fpr)
 
 
 def _threshold_from_inner_model(x_train_s: np.ndarray, y_train: np.ndarray,
@@ -266,11 +287,10 @@ def _eval_fold(df: pd.DataFrame, features: pd.DataFrame, truth: np.ndarray,
     # validation-split), never from the test fold.
     rf_thr = _threshold_from_inner_model(x_train_s, y_train, target_fpr=0.01,
                                          random_state=random_state)
-    # TAIM threshold: select on the train-warmed TAIM scores over the TRAIN rows. This uses
-    # only training telemetry (no fold re-fit is possible for a stateful detector), so it is
-    # a conservative, no-test-leakage choice.
-    taim_thr = _pick_threshold_on_validation(y_train, _taim_train_score(df.iloc[train_idx]),
-                                             target_fpr=0.01)
+    # TAIM recall@FPR cutoff from a GENUINE chronological train/validation split: baseline
+    # warmed on the earlier train fraction, cutoff picked on the later (frozen-scored)
+    # validation fraction. Not in-sample, and never uses the test fold.
+    taim_thr = _taim_calibration_threshold(df.iloc[train_idx], target_fpr=0.01)
 
     out = {}
     for name, pred in (("taim", taim_flagged_test), ("random_forest", rf_pred),

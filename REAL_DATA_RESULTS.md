@@ -38,9 +38,12 @@ the flow belongs to, NOT a re-derived drifted timestamp). Output:
   baseline that scores it. Device identity is held constant across both phases.
 - Only IsolationForest's `contamination` is tuned on an inner validation split. The
   RandomForest decision threshold is fixed at 0.5.
-- The RF and TAIM **recall@FPR cutoffs are selected on a genuine inner validation split** (a
-  fresh model fit on a fit-split and scored on a validation-split, or TAIM's train-warmed
-  score) — never on the test fold.
+- The RF and TAIM **recall@FPR cutoffs are selected on a genuine validation split** — never
+  on the test fold. RF uses a fresh model fit on a fit-split and scored on a validation-split;
+  TAIM (stateful, cannot be re-fit per fold) is calibrated by a **chronological
+  train/validation split within the training timeline**: the baseline is warmed on the earlier
+  fraction and the cutoff is picked on the later fraction scored against that frozen baseline
+  (a genuine out-of-warm-up operating point, not an in-sample one).
 - Comparators all see the same 5 windowed signals (`bandwidth_mbps`, `conn_rate_ps`,
   `port_div`, `pkt_size_mean`, `app_req_ps`; bandwidth/app_req log1p-scaled).
 
@@ -51,7 +54,7 @@ the flow belongs to, NOT a re-derived drifted timestamp). Output:
 | **RandomForest (supervised)** | **0.792 (±0.049)** | 0.742 | 0.902 | **0.956 (±0.034)** | **0.992 (±0.010)** | 0.919 | ~5 |
 | IsolationForest (unsupervised) | 0.117 (±0.028) | 0.105 | 0.856 | — | — | — | ~9 |
 | fixed-rule baseline | 0.090 (±0.063) | 0.053 | 0.976 | — | — | — | ~580 |
-| TAIM (adaptive, fold-isolated) | 0.047 (±0.032) | 0.026 | 0.508 | 0.043 (±0.031) | 0.544 (±0.108) | 0.510 | ~50 |
+| TAIM (adaptive, fold-isolated) | 0.052 (±0.032) | 0.026 | 0.508 | 0.043 (±0.031) | 0.569 (±0.108) | 0.540 | ~50 |
 
 Per-family supervised RF: F1 0.52–0.90 and ROC-AUC 0.92–1.00 across all 17 families; TAIM F1
 0.00–0.23 across all 17.
