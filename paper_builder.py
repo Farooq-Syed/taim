@@ -62,6 +62,10 @@ def add_table(doc, header, rows, widths=None, font_size=9.5, highlight=()):
         r = p.add_run(str(h))
         set_font(r, size=font_size, bold=True)
         set_cell_shading(cell, "DDDDDD")
+    tr_pr = table.rows[0]._tr.get_or_add_trPr()
+    tbl_header = OxmlElement("w:tblHeader")
+    tbl_header.set(qn("w:val"), "true")
+    tr_pr.append(tbl_header)
     for i, row in enumerate(rows, start=1):
         for j, val in enumerate(row):
             cell = table.rows[i].cells[j]
@@ -87,8 +91,8 @@ def build():
         section.bottom_margin = Inches(1)
 
     # Title
-    add_para(doc, "Adaptive Time-Aware Thresholding Does Not Transfer to a Real DDoS "
-                  "Benchmark: A Temporal-Detector Mismatch", size=15, bold=True,
+    add_para(doc, "TAIM Does Not Transfer to the CICDDoS2019 Benchmark: A Temporal-Detector "
+                  "Mismatch", size=15, bold=True,
              align=WD_ALIGN_PARAGRAPH.CENTER, space_after=2)
     add_para(doc, "Anonymous author(s) - anonymized for review", size=10.5, italic=True,
              align=WD_ALIGN_PARAGRAPH.CENTER, space_after=10)
@@ -96,18 +100,17 @@ def build():
     # Abstract
     add_heading(doc, "Abstract")
     add_para(doc,
-        "Time-aware detectors aim to improve on snapshot anomaly detection by learning a "
-        "per-device baseline over time and firing on sustained deviation. We test whether this "
-        "holds on a real public DDoS benchmark (CICDDoS2019) under realistic distribution "
-        "shift. Using strict family and day hold-outs, fold-isolation, and validation-calibrated "
-        "operating points, we find that the adaptive detector TAIM is near-chance on unseen "
-        "families (ROC-AUC \u2248 0.57, PR-AUC \u2248 0.05, F1 \u2248 0.05), while a supervised "
-        "Random Forest baseline generalizes strongly (ROC-AUC \u2248 0.99, F1 \u2248 0.79, on "
-        "17 held-out families with \u226511 attack windows each). We trace this to a benchmark "
-        "mismatch: CICDDoS2019 family bursts last only minutes, giving \u22483.2 windows per "
-        "source IP, so there is too little per-device history for a temporal baseline to learn "
-        "from. We argue this is a temporal-detector/benchmark mismatch rather than a "
-        "detector deficiency, and that a longer-horizon trace is required for a fair "
+        "We test whether a time-aware, adaptive detector transfers to a real public DDoS "
+        "benchmark. On CICDDoS2019, under strict family and day hold-outs, fold-isolation and "
+        "validation-calibrated operating points, the adaptive detector TAIM is near-chance on "
+        "unseen families (ROC-AUC \u2248 0.57, PR-AUC \u2248 0.05, F1 \u2248 0.05), while a "
+        "supervised Random Forest baseline generalizes strongly (ROC-AUC \u2248 0.99, F1 "
+        "\u2248 0.79) on 17 held-out families with \u226511 attack windows each. The narrow "
+        "claim: TAIM does not transfer to this CICDDoS2019 benchmark. We trace the failure to a "
+        "temporal-detector/benchmark mismatch - CICDDoS2019 family bursts last only minutes, "
+        "giving \u22483.2 windows per source IP, so there is too little per-device history for a "
+        "temporal baseline to learn from. We argue this is a benchmark-transfer result, not a "
+        "deployment-level claim, and that a longer-horizon trace is required for a fair "
         "evaluation.", size=10.5)
 
     # 1 Introduction
@@ -183,14 +186,14 @@ def build():
     add_para(doc, "Strict family hold-out (17 held-out families, \u226511 attack windows each):")
     add_table(
         doc,
-        ["comparator", "F1 (\u00b195% CI)", "precision", "recall", "PR-AUC (\u00b1CI)", "ROC-AUC (\u00b1CI)", "recall@1%FPR", "alerts"],
+        ["comparator", "F1 (\u00b195% CI)", "prec.", "recall", "PR-AUC (\u00b1CI)", "ROC-AUC (\u00b1CI)", "recall@1% FPR", "alerts"],
         [
-            ["RandomForest (supervised)", "0.792 (\u00b10.049)", "0.742", "0.902", "0.956 (\u00b10.034)", "0.992 (\u00b10.010)", "0.919", "\u22485"],
-            ["IsolationForest (unsupervised)", "0.117 (\u00b10.028)", "0.105", "0.856", "\u2014", "\u2014", "\u2014", "\u22489"],
-            ["Fixed-rule baseline", "0.090 (\u00b10.063)", "0.053", "0.976", "\u2014", "\u2014", "\u2014", "\u224811"],
-            ["TAIM (adaptive, fold-isolated)", "0.052 (\u00b10.032)", "0.029", "0.541", "0.046 (\u00b10.031)", "0.569 (\u00b10.107)", "0.540", "\u224881"],
+            ["Random Forest (sup.)", "0.792 (\u00b10.049)", "0.742", "0.902", "0.956 (\u00b10.034)", "0.992 (\u00b10.010)", "0.919", "\u22485"],
+            ["Isolation Forest", "0.117 (\u00b10.028)", "0.105", "0.856", "\u2014", "\u2014", "\u2014", "\u22489"],
+            ["Fixed rule", "0.090 (\u00b10.063)", "0.053", "0.976", "\u2014", "\u2014", "\u2014", "\u224811"],
+            ["TAIM (adaptive)", "0.052 (\u00b10.032)", "0.029", "0.541", "0.046 (\u00b10.031)", "0.569 (\u00b10.107)", "0.540", "\u224881"],
         ],
-        widths=[1.7, 1.1, 0.75, 0.7, 1.0, 1.0, 0.85, 0.6],
+        widths=[1.4, 1.0, 0.6, 0.65, 0.95, 0.95, 0.85, 0.5],
         highlight=(0,),
     )
     add_para(doc,
@@ -198,6 +201,15 @@ def build():
         "0.92\u20131.00 across all 17 families (see Table 2); TAIM F1 is 0.00\u20130.23. Under "
         "strict day hold-out (2 capture days), RF F1 \u2248 0.70 (AUC \u2248 0.92) versus TAIM "
         "F1 \u2248 0.18.", size=10.5)
+
+    add_para(doc,
+        "Important operating-point caveat. The 1% FPR cutoff is a *validation-selected* "
+        "threshold, not a guaranteed operational false-positive rate. When applied to the held-out "
+        "test folds, the TAIM cutoff produced an achieved test FPR of \u2248 0.395 - over 39 "
+        "times the 1% budget - because TAIM's score does not separate attacks under shift. The "
+        "corresponding RF cutoff achieved FPR \u2248 0.005. These are test-set FPRs observed under "
+        "shift, not a guarantee that the detector will operate at 1% FPR in deployment.",
+        size=10.5)
 
     add_para(doc, "Table 2. Per held-out family, supervised Random Forest (fold-isolated):")
     add_table(
@@ -229,10 +241,11 @@ def build():
         "source IP, so there is essentially no per-device history for TAIM's baseline to learn "
         "from and no time-of-day regime to model. Even after fold isolation and validation "
         "calibration, TAIM's score orders attacks about as well as chance: its validation-"
-        "calibrated recall@1%FPR cutoff achieves an actual FPR of \u22480.40, i.e. the score "
-        "does not separate the classes. Isolation Forest and Random Forest are snapshot models "
-        "that need no such history, so they are not similarly handicapped. We read this as a "
-        "benchmark mismatch, not a general failure of temporal detection.")
+        "calibrated recall@1%FPR cutoff achieved a test FPR of \u2248 0.395 on held-out folds, "
+        "\u224839 times the 1% budget, i.e. the score does not separate the classes. Isolation "
+        "Forest and Random Forest are snapshot models that need no such history, so they are not "
+        "similarly handicapped. We read this as a benchmark mismatch, not a general failure of "
+        "temporal detection.")
 
     # 5 Related work
     add_heading(doc, "5. Related work")
@@ -270,13 +283,37 @@ def build():
         "adaptive detector falls far behind a supervised baseline even under a fold-isolated, "
         "calibrated protocol.")
 
-    add_heading(doc, "Reproduce")
+    add_heading(doc, "8. Repository, data, and reproduction")
     add_para(doc,
-        "python scripts/download_real_data.py && python scripts/build_real_windows.py "
-        "--rows-per-family 1000000 --bucket-min 1 --output data/cicddos_real_windows.csv && "
-        "python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split family "
-        "&& python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split day",
+        "Repository (anonymized for review): github.com/Farooq-Syed/taim. The evaluation entry "
+        "point is src/real_cicddos_eval.py; the window builder is scripts/build_real_windows.py; "
+        "the capture downloader is scripts/download_real_data.py. Frozen preprocessing and split "
+        "definitions are documented in REAL_DATA_RESULTS.md.", size=10)
+    add_para(doc,
+        "Data attribution and license. CICDDoS2019 (CC-BY-4.0), Canadian Institute for "
+        "Cybersecurity, University of New Brunswick. Dataset page: "
+        "https://www.unb.ca/cic/datasets/ddos-2019.html. The captures are public and used here "
+        "for research evaluation only. This manuscript is released under the repository's "
+        "Non-Commercial Personal-Use License.", size=10)
+    add_para(doc,
+        "Reproduction commands.",
+        size=10)
+    add_para(doc,
+        "python scripts/download_real_data.py; "
+        "python scripts/build_real_windows.py --rows-per-family 1000000 --bucket-min 1 "
+        "--output data/cicddos_real_windows.csv; "
+        "python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split family; "
+        "python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split day",
         size=9.5)
+
+    # AI-use disclosure
+    add_heading(doc, "9. AI-use disclosure")
+    add_para(doc,
+        "AI coding assistance was used during implementation and drafting. The author directed "
+        "the research question, the benchmark evaluation protocol, the strict split and "
+        "calibration design, the interpretation of the negative result, and reviewed and verified "
+        "the final code and manuscript claims. AI assistance did not set the research direction or "
+        "the claims.", size=10)
 
     # References
     add_heading(doc, "References")
@@ -286,7 +323,7 @@ def build():
         "ICISSP 2018. (Public NIDS benchmarks.)", size=9.5)
     add_para(doc, "[3] Liu, Ting & Zhou, Isolation Forest, ICDM 2008. Breunig et al., LOF, "
         "SIGMOD 2000. Breiman, Random Forests, ML 2001.", size=9.5)
-    add_para(doc, "[4] Goldschmidt & Chuda, Network Intrusion Datasets: A Survey, 2025. "
+    add_para(doc, "[4] Goldschmidt & Chud\u00e1, Network Intrusion Datasets: A Survey, 2025. "
         "https://arxiv.org/abs/2502.06688", size=9.5)
 
     # Appendix - review questions
@@ -302,6 +339,11 @@ def build():
         "a temporal baseline to learn from - the exact condition this benchmark lacks.",
         size=9.5)
 
+    doc.core_properties.author = ""
+    doc.core_properties.last_modified_by = ""
+    doc.core_properties.title = "Anonymous Workshop Manuscript"
+    doc.core_properties.subject = "Methodological review"
+    doc.core_properties.comments = ""
     doc.save(OUT)
     print("wrote", OUT)
 
