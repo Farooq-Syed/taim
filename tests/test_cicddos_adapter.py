@@ -38,5 +38,31 @@ def test_parse_flows_schema_and_aggregation():
         attack = frame[frame["is_attack"] == 1].iloc[0]
         # attack device has much heavier traffic (real DDoS signal)
         assert attack["bandwidth_mbps"] > benign["bandwidth_mbps"]
+
+
+def test_parse_flows_official_schema_and_metadata():
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "flows.csv"
+        # Official CICDDoS2019 schema (Source IP / Destination Port) with uppercase BENIGN.
+        rows = [
+            {"Timestamp": "2018-12-01 10:00:00", "Source IP": "172.16.0.5",
+             "Destination Port": 443, "Flow Bytes/s": 100000, "Flow Packets/s": 100,
+             "Label": "BENIGN"},
+            {"Timestamp": "2018-12-01 10:02:00", "Source IP": "172.16.0.5",
+             "Destination Port": 443, "Flow Bytes/s": 200000, "Flow Packets/s": 150,
+             "Label": "BENIGN"},
+            {"Timestamp": "2018-12-01 10:07:00", "Source IP": "172.16.0.6",
+             "Destination Port": 80, "Flow Bytes/s": 1000000, "Flow Packets/s": 5000,
+             "Label": "Syn"},
+        ]
+        pd.DataFrame(rows).to_csv(path, index=False)
+        frame = parse_flows([path], bucket_min=15, include_metadata=True)
+        assert len(frame) == 2
+        assert {"family", "day"}.issubset(frame.columns)
+        benign = frame[frame["is_attack"] == 0].iloc[0]
+        attack = frame[frame["is_attack"] == 1].iloc[0]
+        assert benign["family"] == "Benign"
+        assert attack["family"] == "Syn"
+        assert frame["day"].nunique() == 1
         assert attack["app_req_ps"] > benign["app_req_ps"]
-        assert attack["attack_type"] == "SYN"
+        assert attack["attack_type"] == "Syn"

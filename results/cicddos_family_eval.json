@@ -1,0 +1,661 @@
+{
+  "input": "data/cicddos_real_windows.csv",
+  "split": "family",
+  "groups_evaluated": 17,
+  "random_state": 42,
+  "comparators": {
+    "taim": {
+      "recall_at_1pct_fpr": 0.3258,
+      "recall_at_1pct_fpr_ci": 0.2011,
+      "fpr_at_1pct_threshold": 0.1271,
+      "fpr_at_1pct_threshold_ci": 0.0509,
+      "f1": 0.0267,
+      "f1_ci": 0.0173,
+      "precision": 0.0167,
+      "precision_ci": 0.0113,
+      "roc_auc": 0.5768,
+      "roc_auc_ci": 0.1023,
+      "recall": 0.2376,
+      "recall_ci": 0.178,
+      "alerts": 51.5882,
+      "alerts_ci": 8.1011,
+      "pr_auc": 0.0145,
+      "pr_auc_ci": 0.0094
+    },
+    "random_forest": {
+      "recall_at_1pct_fpr": 0.8903,
+      "recall_at_1pct_fpr_ci": 0.1259,
+      "fpr_at_1pct_threshold": 0.0011,
+      "fpr_at_1pct_threshold_ci": 0.0001,
+      "f1": 0.7715,
+      "f1_ci": 0.0493,
+      "precision": 0.7029,
+      "precision_ci": 0.0562,
+      "roc_auc": 0.9989,
+      "roc_auc_ci": 0.0015,
+      "recall": 0.9114,
+      "recall_ci": 0.0979,
+      "alerts": 5.2941,
+      "alerts_ci": 3.3309,
+      "pr_auc": 0.9668,
+      "pr_auc_ci": 0.0301
+    },
+    "isolation_forest": {
+      "f1": 0.421,
+      "f1_ci": 0.0726,
+      "recall": 0.7764,
+      "recall_ci": 0.1595,
+      "alerts": 8.9412,
+      "alerts_ci": 2.612,
+      "precision": 0.3174,
+      "precision_ci": 0.0798
+    },
+    "fixed_rule": {
+      "f1": 0.0194,
+      "f1_ci": 0.0182,
+      "recall": 1.0,
+      "recall_ci": 0.0,
+      "alerts": 582.1176,
+      "alerts_ci": 6.2202,
+      "precision": 0.0101,
+      "precision_ci": 0.0099
+    }
+  },
+  "per_group": [
+    {
+      "taim": {
+        "f1": 0.05333333333333334,
+        "precision": 0.028169014084507043,
+        "recall": 0.5,
+        "alerts": 71,
+        "pr_auc": 0.007065190705591594,
+        "roc_auc": 0.6234249713631157,
+        "recall_at_1pct_fpr": 0.5,
+        "fpr_at_1pct_threshold": 0.23711340206185566
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 6,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.5714285714285714,
+        "precision": 0.4,
+        "recall": 1.0,
+        "alerts": 10
+      },
+      "fixed_rule": {
+        "f1": 0.0136986301369863,
+        "precision": 0.006896551724137931,
+        "recall": 1.0,
+        "alerts": 580
+      },
+      "_group": "DrDoS_DNS"
+    },
+    {
+      "taim": {
+        "f1": 0.05714285714285714,
+        "precision": 0.030303030303030304,
+        "recall": 0.5,
+        "alerts": 33,
+        "pr_auc": 0.006297496318114874,
+        "roc_auc": 0.6849942726231386,
+        "recall_at_1pct_fpr": 0.5,
+        "fpr_at_1pct_threshold": 0.10996563573883161
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.4444444444444444,
+        "precision": 0.2857142857142857,
+        "recall": 1.0,
+        "alerts": 7
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "DrDoS_LDAP"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 43,
+        "pr_auc": 0.002285714285714286,
+        "roc_auc": 0.43871706758304696,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.018327605956471937
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.2857142857142857,
+        "precision": 0.2,
+        "recall": 0.5,
+        "alerts": 5
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "DrDoS_MSSQL"
+    },
+    {
+      "taim": {
+        "f1": 0.10714285714285714,
+        "precision": 0.06818181818181818,
+        "recall": 0.25,
+        "alerts": 44,
+        "pr_auc": 0.03220338983050847,
+        "roc_auc": 0.6715349369988545,
+        "recall_at_1pct_fpr": 0.5,
+        "fpr_at_1pct_threshold": 0.12829324169530354
+      },
+      "random_forest": {
+        "f1": 0.47058823529411764,
+        "precision": 0.8,
+        "recall": 0.3333333333333333,
+        "alerts": 5,
+        "pr_auc": 0.8350351037851038,
+        "roc_auc": 0.9981863306605575,
+        "recall_at_1pct_fpr": 0.16666666666666666,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.5833333333333334,
+        "precision": 0.5833333333333334,
+        "recall": 0.5833333333333334,
+        "alerts": 12
+      },
+      "fixed_rule": {
+        "f1": 0.04,
+        "precision": 0.02040816326530612,
+        "recall": 1.0,
+        "alerts": 588
+      },
+      "_group": "DrDoS_NTP"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 43,
+        "pr_auc": 0.002285714285714286,
+        "roc_auc": 0.43986254295532645,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.018327605956471937
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.25,
+        "precision": 0.16666666666666666,
+        "recall": 0.5,
+        "alerts": 6
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "DrDoS_NetBIOS"
+    },
+    {
+      "taim": {
+        "f1": 0.02702702702702703,
+        "precision": 0.013888888888888888,
+        "recall": 0.5,
+        "alerts": 72,
+        "pr_auc": 0.00904977375565611,
+        "roc_auc": 0.8745704467353952,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.2508591065292096
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.4,
+        "precision": 0.25,
+        "recall": 1.0,
+        "alerts": 8
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "DrDoS_SNMP"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 43,
+        "pr_auc": 0.030554621848739496,
+        "roc_auc": 0.7147766323024055,
+        "recall_at_1pct_fpr": 0.5,
+        "fpr_at_1pct_threshold": 0.018327605956471937
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.5,
+        "precision": 0.3333333333333333,
+        "recall": 1.0,
+        "alerts": 6
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "DrDoS_SSDP"
+    },
+    {
+      "taim": {
+        "f1": 0.041666666666666664,
+        "precision": 0.022727272727272728,
+        "recall": 0.25,
+        "alerts": 44,
+        "pr_auc": 0.057836057265931835,
+        "roc_auc": 0.7150630011454754,
+        "recall_at_1pct_fpr": 0.5,
+        "fpr_at_1pct_threshold": 0.018327605956471937
+      },
+      "random_forest": {
+        "f1": 0.8888888888888888,
+        "precision": 0.8,
+        "recall": 1.0,
+        "alerts": 5,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.5714285714285714,
+        "precision": 0.4,
+        "recall": 1.0,
+        "alerts": 10
+      },
+      "fixed_rule": {
+        "f1": 0.0136986301369863,
+        "precision": 0.006896551724137931,
+        "recall": 1.0,
+        "alerts": 580
+      },
+      "_group": "DrDoS_UDP"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 71,
+        "pr_auc": 0.002285714285714286,
+        "roc_auc": 0.35738831615120276,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.2508591065292096
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.4,
+        "precision": 0.25,
+        "recall": 1.0,
+        "alerts": 8
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "LDAP"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 32,
+        "pr_auc": 0.002285714285714286,
+        "roc_auc": 0.4261168384879725,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.10996563573883161
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.4444444444444444,
+        "precision": 0.2857142857142857,
+        "recall": 1.0,
+        "alerts": 7
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "MSSQL"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 71,
+        "pr_auc": 0.004561003420752566,
+        "roc_auc": 0.35738831615120276,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.24971363115693013
+      },
+      "random_forest": {
+        "f1": 0.6666666666666666,
+        "precision": 0.6,
+        "recall": 0.75,
+        "alerts": 5,
+        "pr_auc": 0.8611111111111112,
+        "roc_auc": 0.9985681557846506,
+        "recall_at_1pct_fpr": 0.75,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.46153846153846156,
+        "precision": 0.3333333333333333,
+        "recall": 0.75,
+        "alerts": 9
+      },
+      "fixed_rule": {
+        "f1": 0.0136986301369863,
+        "precision": 0.006896551724137931,
+        "recall": 1.0,
+        "alerts": 580
+      },
+      "_group": "NetBIOS"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 71,
+        "pr_auc": 0.006825938566552901,
+        "roc_auc": 0.35738831615120276,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.24513172966781213
+      },
+      "random_forest": {
+        "f1": 0.8333333333333334,
+        "precision": 0.8333333333333334,
+        "recall": 0.8333333333333334,
+        "alerts": 6,
+        "pr_auc": 0.8645833333333333,
+        "roc_auc": 0.9956090110729287,
+        "recall_at_1pct_fpr": 0.8333333333333334,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.375,
+        "precision": 0.3,
+        "recall": 0.5,
+        "alerts": 10
+      },
+      "fixed_rule": {
+        "f1": 0.02040816326530612,
+        "precision": 0.010309278350515464,
+        "recall": 1.0,
+        "alerts": 582
+      },
+      "_group": "Portmap"
+    },
+    {
+      "taim": {
+        "f1": 0.04597701149425287,
+        "precision": 0.05714285714285714,
+        "recall": 0.038461538461538464,
+        "alerts": 35,
+        "pr_auc": 0.05484707546563217,
+        "roc_auc": 0.44389373513084857,
+        "recall_at_1pct_fpr": 0.038461538461538464,
+        "fpr_at_1pct_threshold": 0.10882016036655212
+      },
+      "random_forest": {
+        "f1": 0.7317073170731707,
+        "precision": 1.0,
+        "recall": 0.5769230769230769,
+        "alerts": 30,
+        "pr_auc": 0.9589755083769709,
+        "roc_auc": 0.9887655300026433,
+        "recall_at_1pct_fpr": 0.38461538461538464,
+        "fpr_at_1pct_threshold": 0.0
+      },
+      "isolation_forest": {
+        "f1": 0.4810126582278481,
+        "precision": 0.7037037037037037,
+        "recall": 0.36538461538461536,
+        "alerts": 27
+      },
+      "fixed_rule": {
+        "f1": 0.15294117647058825,
+        "precision": 0.08280254777070063,
+        "recall": 1.0,
+        "alerts": 628
+      },
+      "_group": "Syn"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 43,
+        "pr_auc": 0.002285714285714286,
+        "roc_auc": 0.4404352806414662,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.01718213058419244
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.4444444444444444,
+        "precision": 0.2857142857142857,
+        "recall": 1.0,
+        "alerts": 7
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "UDP"
+    },
+    {
+      "taim": {
+        "f1": 0.07792207792207792,
+        "precision": 0.04054054054054054,
+        "recall": 1.0,
+        "alerts": 74,
+        "pr_auc": 0.014018691588785047,
+        "roc_auc": 0.8791523482245132,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.24169530355097366
+      },
+      "random_forest": {
+        "f1": 0.8571428571428571,
+        "precision": 0.75,
+        "recall": 1.0,
+        "alerts": 4,
+        "pr_auc": 0.9166666666666666,
+        "roc_auc": 0.9996181748759068,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.5,
+        "precision": 0.3333333333333333,
+        "recall": 1.0,
+        "alerts": 9
+      },
+      "fixed_rule": {
+        "f1": 0.010309278350515464,
+        "precision": 0.0051813471502590676,
+        "recall": 1.0,
+        "alerts": 579
+      },
+      "_group": "UDP-lag"
+    },
+    {
+      "taim": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 43,
+        "pr_auc": 0.002285714285714286,
+        "roc_auc": 0.43986254295532645,
+        "recall_at_1pct_fpr": 0.0,
+        "fpr_at_1pct_threshold": 0.018327605956471937
+      },
+      "random_forest": {
+        "f1": 0.8,
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "alerts": 3,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.4444444444444444,
+        "precision": 0.2857142857142857,
+        "recall": 1.0,
+        "alerts": 7
+      },
+      "fixed_rule": {
+        "f1": 0.006896551724137931,
+        "precision": 0.0034602076124567475,
+        "recall": 1.0,
+        "alerts": 578
+      },
+      "_group": "UDPLag"
+    },
+    {
+      "taim": {
+        "f1": 0.044444444444444446,
+        "precision": 0.022727272727272728,
+        "recall": 1.0,
+        "alerts": 44,
+        "pr_auc": 0.009523809523809525,
+        "roc_auc": 0.9404352806414662,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.11912943871706758
+      },
+      "random_forest": {
+        "f1": 0.6666666666666666,
+        "precision": 0.5,
+        "recall": 1.0,
+        "alerts": 2,
+        "pr_auc": 1.0,
+        "roc_auc": 1.0,
+        "recall_at_1pct_fpr": 1.0,
+        "fpr_at_1pct_threshold": 0.001145475372279496
+      },
+      "isolation_forest": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "alerts": 4
+      },
+      "fixed_rule": {
+        "f1": 0.0034602076124567475,
+        "precision": 0.0017331022530329288,
+        "recall": 1.0,
+        "alerts": 577
+      },
+      "_group": "WebDDoS"
+    }
+  ]
+}

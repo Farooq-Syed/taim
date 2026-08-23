@@ -105,7 +105,7 @@ src/
   temporal.py        windowed-mean + PCA-autoencoder temporal scorers
   real_data.py       legacy NSL-KDD benchmark replay adapter
   plot_utils.py      report plots
-tests/               pytest suite (48 tests)
+tests/               pytest suite (57 tests)
 results/             CSVs + plots from each evaluation
 ```
 
@@ -121,7 +121,7 @@ cd taim
 pip install -r requirements.txt
 ```
 
-### 2. Verify everything works (48 tests)
+### 2. Verify everything works (57 tests)
 
 ```bash
 python -m pytest tests/ -q
@@ -189,8 +189,28 @@ This adapter constructs a synthetic timeline from legacy KDD records; it is not 
 an intact operational trace. The [official UNB NSL-KDD page](https://www.unb.ca/cic/datasets/nsl.html)
 states that the dataset is no longer available and is not a perfect representation of existing
 networks. The old result remains documented for historical comparison, but is not counted as
-external operational validation. A current DDoS-focused target is
-[CICDDoS2019](https://www.unb.ca/cic/datasets/ddos-2019.html); its adapter is future work.
+external operational validation.
+
+### 9. Optional — real CICDDoS2019 (public-benchmark transfer)
+
+The official CICDDoS2019 captures are adapted to the TAIM per-window schema and evaluated
+under **strict family/day holdouts** against simple baselines:
+
+```bash
+# 1. Download the official captures (HF mirror; CC-BY-4.0)
+python scripts/download_real_data.py
+# 2. Build the windowed dataset (bounded per-family sample)
+python scripts/build_real_windows.py --rows-per-family 700000 --bucket-min 15 \
+    --output data/cicddos_real_windows.csv
+# 3. Strict-split evaluation (TAIM vs RF vs IF vs fixed-rule)
+python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split family
+python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split day
+```
+
+Result (headline): on unseen families, **TAIM is near-chance** (ROC-AUC ~0.58, PR-AUC ~0.02)
+while a supervised RandomForest generalizes (ROC-AUC 0.999, F1 0.772). TAIM's per-device
+temporal baseline has no purchase on short, family-isolated flows. See
+[REAL_DATA_RESULTS.md](REAL_DATA_RESULTS.md) for the full tables and honest limits.
 
 ### Where the results go
 
