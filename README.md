@@ -105,7 +105,7 @@ src/
   temporal.py        windowed-mean + PCA-autoencoder temporal scorers
   real_data.py       legacy NSL-KDD benchmark replay adapter
   plot_utils.py      report plots
-tests/               pytest suite (57 tests)
+tests/               pytest suite (64 tests)
 results/             CSVs + plots from each evaluation
 ```
 
@@ -121,7 +121,7 @@ cd taim
 pip install -r requirements.txt
 ```
 
-### 2. Verify everything works (57 tests)
+### 2. Verify everything works (64 tests)
 
 ```bash
 python -m pytest tests/ -q
@@ -209,7 +209,8 @@ python src/real_cicddos_eval.py --input data/cicddos_real_windows.csv --split da
 ```
 
 Result (headline, family holdout n=17): on unseen families, **TAIM is near-chance**
-(ROC-AUC ~0.54, PR-AUC ~0.04, F1 0.05) while a supervised RandomForest generalizes
+(ROC-AUC ~0.57, PR-AUC ~0.05, F1 0.05) while a supervised RandomForest retains high
+performance on this bounded held-out-family evaluation
 (ROC-AUC 0.99, F1 0.79). TAIM is **fold-isolated** (baseline warmed on train, test scored
 frozen) and its recall@FPR cutoff is validated, not test-tuned. The temporal baseline has no
 purchase on short, family-isolated flows. See [REAL_DATA_RESULTS.md](REAL_DATA_RESULTS.md) for

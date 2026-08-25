@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-23 (revision — fold isolation, threshold calibration, day tagging, and a
 substantially larger dataset). Tests the narrow question: **does TAIM's adaptive, time-aware
-thresholding remain useful under realistic shift on a real public DDoS benchmark, versus
+thresholding remain useful under family and capture-day shift on a public DDoS benchmark, versus
 simple baselines?**
 
 ## Data
@@ -51,10 +51,10 @@ the flow belongs to, NOT a re-derived drifted timestamp). Output:
 
 | comparator | F1 (±95%CI) | precision | recall | PR-AUC (±CI) | ROC-AUC (±CI) | recall@1%FPR | alerts |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| **RandomForest (supervised)** | **0.792 (±0.049)** | 0.742 | 0.902 | **0.956 (±0.034)** | **0.992 (±0.010)** | 0.919 | ~5 |
-| IsolationForest (unsupervised) | 0.117 (±0.028) | 0.105 | 0.856 | — | — | — | ~9 |
-| fixed-rule baseline | 0.090 (±0.063) | 0.053 | 0.976 | — | — | — | ~580 |
-| TAIM (adaptive, fold-isolated) | 0.052 (±0.032) | 0.026 | 0.508 | 0.043 (±0.031) | 0.569 (±0.108) | 0.540 | ~50 |
+| **RandomForest (supervised)** | **0.792 (±0.049)** | 0.742 | 0.902 | **0.956 (±0.034)** | **0.992 (±0.010)** | 0.919 | 59.8 |
+| IsolationForest (unsupervised) | 0.117 (±0.028) | 0.105 | 0.856 | — | — | — | 419.6 |
+| fixed-rule baseline | 0.090 (±0.063) | 0.053 | 0.976 | — | — | — | 1,091.6 |
+| TAIM (adaptive, fold-isolated) | 0.052 (±0.032) | 0.029 | 0.541 | 0.046 (±0.031) | 0.569 (±0.107) | 0.540 | 813.7 |
 
 Per-family supervised RF: F1 0.52–0.90 and ROC-AUC 0.92–1.00 across all 17 families; TAIM F1
 0.00–0.23 across all 17.
@@ -76,7 +76,8 @@ sustained deviations. On CICDDoS2019 the per-family captures are short bursts wi
 **~3.2 windows per source-IP**, so there is essentially no per-device history for TAIM's
 baseline (and no time-of-day regime). Even with fold isolation, TAIM's score separates
 attacks poorly (ROC-AUC ≈ 0.54 on held-out families, and its recall@1%FPR cutoff hits an FPR
-of ~0.42 — i.e. the score orders attacks no better than chance). IsolationForest and
+of 0.395 — i.e. the calibrated operating point does not preserve the validation FPR under
+shift). IsolationForest and
 RandomForest are snapshot models that do not need that history. This is a genuine property of
 the benchmark + method, not a config artifact.
 
@@ -88,7 +89,8 @@ reprocessing should not be assumed; the reported aggregates use a fixed evaluati
 
 > On real CICDDoS2019 with strict family/day holdouts, **adaptive time-aware thresholding
 > (TAIM) does not remain useful under distribution shift**: it is near-chance (ROC-AUC ≈ 0.54,
-> PR-AUC ≈ 0.04) on unseen families, while a supervised baseline generalizes strongly
+> PR-AUC ≈ 0.05) on unseen families, while a supervised baseline retains high performance
+> on this bounded held-out-family subset
 > (RF F1 0.79, ROC-AUC 0.99). TAIM's per-device temporal baseline has no purchase on short,
 > family-isolated flows. This is a benchmark-transfer finding, not a deployment-level claim.
 

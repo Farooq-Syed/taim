@@ -11,8 +11,10 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
+from pathlib import Path
 
-OUT = "TAIM_anonymous_workshop_paper.docx"
+OUT = Path(__file__).with_name("TAIM_anonymous_workshop_paper.docx")
+ARCHITECTURE_FIGURE = Path(__file__).with_name("assets") / "evaluation_architecture.png"
 
 
 def set_font(run, size=11, bold=False, italic=False, color=None):
@@ -49,6 +51,35 @@ def add_heading(doc, text, size=13, bold=True):
     return add_para(doc, text, size=size, bold=bold, space_after=4)
 
 
+def add_caption(doc, text):
+    p = add_para(doc, text, size=9, italic=True,
+                 align=WD_ALIGN_PARAGRAPH.CENTER, space_after=3)
+    p.paragraph_format.keep_with_next = True
+    return p
+
+
+def add_table_reading(doc, text):
+    p = doc.add_paragraph()
+    p.paragraph_format.left_indent = Inches(0.12)
+    p.paragraph_format.right_indent = Inches(0.08)
+    p.paragraph_format.space_after = Pt(6)
+    r = p.add_run("How to read this table. ")
+    set_font(r, size=9.2, bold=True, color=(36, 74, 115))
+    r = p.add_run(text)
+    set_font(r, size=9.2)
+    return p
+
+
+def add_architecture_figure(doc):
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_after = Pt(3)
+    shape = p.add_run().add_picture(str(ARCHITECTURE_FIGURE), width=Inches(5.75))
+    shape._inline.docPr.set("descr", "CICDDoS2019 flow tables are converted to one-minute source-IP windows, split by family or day, used to warm and calibrate models without test labels, and then scored once on a frozen outer test fold.")
+    shape._inline.docPr.set("title", "TAIM benchmark-transfer evaluation architecture")
+    add_caption(doc, "Figure 1. Benchmark-provider data and the author-controlled, fold-isolated offline evaluation boundary.")
+
+
 def add_table(doc, header, rows, widths=None, font_size=9.5, highlight=()):
     table = doc.add_table(rows=1 + len(rows), cols=len(header))
     table.style = "Table Grid"
@@ -78,17 +109,16 @@ def add_table(doc, header, rows, widths=None, font_size=9.5, highlight=()):
         for j, w in enumerate(widths):
             for row in table.rows:
                 row.cells[j].width = Inches(w)
-    doc.add_paragraph()
     return table
 
 
 def build():
     doc = Document()
     for section in doc.sections:
-        section.left_margin = Inches(1)
-        section.right_margin = Inches(1)
-        section.top_margin = Inches(1)
-        section.bottom_margin = Inches(1)
+        section.left_margin = Inches(0.85)
+        section.right_margin = Inches(0.85)
+        section.top_margin = Inches(0.75)
+        section.bottom_margin = Inches(0.75)
 
     # Title
     add_para(doc, "TAIM Does Not Transfer to the CICDDoS2019 Benchmark: A Temporal-Detector "
@@ -96,6 +126,12 @@ def build():
              align=WD_ALIGN_PARAGRAPH.CENTER, space_after=2)
     add_para(doc, "Anonymous author(s) - anonymized for review", size=10.5, italic=True,
              align=WD_ALIGN_PARAGRAPH.CENTER, space_after=10)
+    add_para(doc,
+        "Audience and scope: a specialized cybersecurity measurement paper for intrusion-"
+        "detection and security-ML venues, written to remain accessible to general "
+        "cybersecurity reviewers. Machine learning is used to evaluate a network-defense "
+        "question; no new classifier or deployment architecture is claimed.",
+        size=9.8, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=8)
 
     # Abstract
     add_heading(doc, "Abstract")
@@ -104,8 +140,9 @@ def build():
         "benchmark. On CICDDoS2019, under strict family and day hold-outs, fold-isolation and "
         "validation-calibrated operating points, the adaptive detector TAIM is near-chance on "
         "unseen families (ROC-AUC \u2248 0.57, PR-AUC \u2248 0.05, F1 \u2248 0.05), while a "
-        "supervised Random Forest baseline generalizes strongly (ROC-AUC \u2248 0.99, F1 "
-        "\u2248 0.79) on 17 held-out families with \u226511 attack windows each. The narrow "
+        "supervised Random Forest baseline retains high performance on this bounded held-out-"
+        "family test (ROC-AUC \u2248 0.99, F1 \u2248 0.79) across 17 families with \u226511 attack "
+        "windows each. The narrow "
         "claim: TAIM does not transfer to this CICDDoS2019 benchmark. We trace the failure to a "
         "temporal-detector/benchmark mismatch - CICDDoS2019 family bursts last only minutes, "
         "giving \u22483.2 windows per source IP, so there is too little per-device history for a "
@@ -127,7 +164,19 @@ def build():
         "warmed on training telemetry before it scores anything, and the warm-up must not see "
         "the evaluation windows. We therefore run the detector under a strict, fold-isolated "
         "protocol on a real public benchmark and ask a narrow question: does adaptive time-aware "
-        "thresholding remain useful under realistic shift?")
+        "thresholding remain useful under family and capture-day shift?")
+
+    add_heading(doc, "1.1 Reader guide: telemetry, metrics, and shifts", size=11.5)
+    add_para(doc,
+        "A flow window summarizes one source IP's traffic during one minute; it is not packet "
+        "payload or host telemetry. An attack family groups traffic generated by one named DDoS "
+        "method, and a day hold-out tests a different capture day. Precision is the fraction of "
+        "alerts that are attacks, recall is the fraction of attacks detected, and F1 is their "
+        "harmonic mean on a 0-to-1 scale. ROC-AUC measures how often attacks rank above benign "
+        "windows across thresholds; PR-AUC emphasizes ranking when attacks are uncommon. FPR is "
+        "the fraction of benign windows incorrectly alerted, and a 95% confidence interval (CI) "
+        "summarizes variation across held-out families. These benchmark measurements are not "
+        "deployment guarantees.", size=10.3)
 
     # 2 Dataset and protocol
     add_heading(doc, "2. Background: TAIM and the snapshot baselines")
@@ -169,7 +218,17 @@ def build():
         "touched for calibration. Comparators see the same 5 windowed signals (bandwidth_mbps, "
         "conn_rate_ps, port_div, pkt_size_mean, app_req_ps; bandwidth/app_req log-scaled).")
 
-    add_heading(doc, "3.1 Methodological hardening")
+    add_heading(doc, "3.1 Experimental system and evaluation architecture", size=11.5)
+    add_para(doc,
+        "No network equipment or attacks were created for this study. The experiment begins at "
+        "the released CICDDoS2019 flow-table boundary. Figure 1 separates the benchmark "
+        "provider's captures from the author-controlled processing, splitting, model warm-up, "
+        "calibration, and final scoring. Family/day metadata constructs the outer split but is "
+        "not supplied as a predictive feature. TAIM may update only while warming on training "
+        "telemetry; it is frozen before it sees the outer test fold.", size=10.3)
+    add_architecture_figure(doc)
+
+    add_heading(doc, "3.2 Methodological hardening")
     add_para(doc,
         "Three evaluation habits were corrected before this result was trusted. First, fold "
         "isolation: a stateful detector cannot be run over the concatenated train+test frame and "
@@ -179,23 +238,29 @@ def build():
         "validation portion, not on the sequence whose scores are reported. Third, per-family "
         "support: a family-level result is only meaningful when each held-out family has enough "
         "attack windows, which required 1-minute buckets (coarser buckets left most families "
-        "with a handful of windows). These are the standard pitfalls for any online detector.")
+        "with a handful of windows). These are important evaluation pitfalls for this stateful detector.")
 
     # 4 Results
     add_heading(doc, "4. Results")
     add_para(doc, "Strict family hold-out (17 held-out families, \u226511 attack windows each):")
     add_table(
         doc,
-        ["comparator", "F1 (\u00b195% CI)", "prec.", "recall", "PR-AUC (\u00b1CI)", "ROC-AUC (\u00b1CI)", "recall@1% FPR", "alerts"],
+        ["method", "F1 (\u00b195% CI)", "prec.", "recall", "PR-AUC (\u00b1CI)", "ROC-AUC (\u00b1CI)", "recall@1% FPR", "alerts"],
         [
-            ["Random Forest (sup.)", "0.792 (\u00b10.049)", "0.742", "0.902", "0.956 (\u00b10.034)", "0.992 (\u00b10.010)", "0.919", "\u22485"],
-            ["Isolation Forest", "0.117 (\u00b10.028)", "0.105", "0.856", "\u2014", "\u2014", "\u2014", "\u22489"],
-            ["Fixed rule", "0.090 (\u00b10.063)", "0.053", "0.976", "\u2014", "\u2014", "\u2014", "\u224811"],
-            ["TAIM (adaptive)", "0.052 (\u00b10.032)", "0.029", "0.541", "0.046 (\u00b10.031)", "0.569 (\u00b10.107)", "0.540", "\u224881"],
+            ["Random Forest (sup.)", "0.792 (\u00b10.049)", "0.742", "0.902", "0.956 (\u00b10.034)", "0.992 (\u00b10.010)", "0.919", "59.8"],
+            ["Isolation Forest", "0.117 (\u00b10.028)", "0.105", "0.856", "\u2014", "\u2014", "\u2014", "419.6"],
+            ["Fixed rule", "0.090 (\u00b10.063)", "0.053", "0.976", "\u2014", "\u2014", "\u2014", "1,091.6"],
+            ["TAIM (adaptive)", "0.052 (\u00b10.032)", "0.029", "0.541", "0.046 (\u00b10.031)", "0.569 (\u00b10.107)", "0.540", "813.7"],
         ],
         widths=[1.4, 1.0, 0.6, 0.65, 0.95, 0.95, 0.85, 0.5],
         highlight=(0,),
     )
+    add_caption(doc, "Table 1. Macro-average family-hold-out results across 17 unseen DDoS families; alerts are mean counts per held-out fold.")
+    add_table_reading(doc,
+        "The Random Forest row means that about 74% of its flagged windows were attacks "
+        "(precision 0.742) and it found about 90% of attack windows (recall 0.902), producing F1 "
+        "0.792. ROC-AUC 0.992 indicates strong ranking across thresholds. By comparison, TAIM's "
+        "F1 0.052 and ROC-AUC 0.569 are near chance under this family shift.")
     add_para(doc,
         "Per held-out family, supervised Random Forest F1 ranges 0.52\u20130.90 and ROC-AUC "
         "0.92\u20131.00 across all 17 families (see Table 2); TAIM F1 is 0.00\u20130.23. Under "
@@ -203,7 +268,7 @@ def build():
         "F1 \u2248 0.18.", size=10.5)
 
     add_para(doc,
-        "Important operating-point caveat. The 1% FPR cutoff is a *validation-selected* "
+        "Important operating-point caveat. The 1% FPR cutoff is a validation-selected "
         "threshold, not a guaranteed operational false-positive rate. When applied to the held-out "
         "test folds, the TAIM cutoff produced an achieved test FPR of \u2248 0.395 - over 39 "
         "times the 1% budget - because TAIM's score does not separate attacks under shift. The "
@@ -229,6 +294,11 @@ def build():
         ],
         widths=[1.5, 1.2, 0.8, 0.9],
     )
+    add_table_reading(doc,
+        "The DrDoS_NTP row contains 172 held-out attack windows. Its F1 0.521 means the fixed "
+        "attack decisions balanced precision and recall only moderately, while ROC-AUC 0.921 "
+        "shows that the Random Forest scores still ranked most attacks above benign windows. "
+        "The two values answer different questions about ranking and alert decisions.")
     add_para(doc,
         "Minimum family support is 11 attack windows (WebDDoS); the well-sampled families reach "
         "F1 0.9, and even the hardest (DrDoS_NTP) reaches AUC 0.92. The range is stable, so the "
@@ -253,7 +323,7 @@ def build():
         "Online, time-aware detection is a common framing for network intrusion detection, and "
         "adaptive baselining is attractive because it does not require labeled attacks. Empirical "
         "work on public DDoS/IDS benchmarks (CIC-IDS, CSE-CIC-IDS, UNSW-NB15) most often reports "
-        "snapshot methods. Less reported is whether the *temporal* premise survives when the "
+        "snapshot methods. Less reported is whether the temporal premise survives when the "
         "benchmark's attacks are short and family-isolated rather than spread over a long host "
         "history. Our result is a concrete counterexample: a temporal detector that is strong on "
         "long-horizon synthetic traffic is near-chance on a real benchmark whose per-device "
@@ -265,8 +335,9 @@ def build():
     add_para(doc,
         "On real CICDDoS2019 with strict family/day hold-outs, fold isolation and validation "
         "calibration, adaptive time-aware thresholding (TAIM) does not remain useful under "
-        "distribution shift: it is near-chance on unseen families while a supervised baseline "
-        "generalizes strongly. The result is a benchmark-transfer finding: TAIM's per-device "
+        "the tested family/day shifts: it is near-chance on unseen families while a supervised "
+        "baseline retains high performance on this bounded subset. The result is a benchmark-"
+        "transfer finding: TAIM's per-device "
         "temporal baseline has no purchase on short, family-isolated bursts. A longer-horizon "
         "real trace (e.g. LANL or a multi-day capture) is the correct next test before any "
         "deployment claim.")
@@ -285,8 +356,9 @@ def build():
 
     add_heading(doc, "8. Repository, data, and reproduction")
     add_para(doc,
-        "Repository (anonymized for review): github.com/Farooq-Syed/taim. The evaluation entry "
-        "point is src/real_cicddos_eval.py; the window builder is scripts/build_real_windows.py; "
+        "Repository URL: withheld from this manuscript for double-blind review and available "
+        "through an anonymous artifact when venue policy permits. The evaluation entry point is "
+        "src/real_cicddos_eval.py; the window builder is scripts/build_real_windows.py; "
         "the capture downloader is scripts/download_real_data.py. Frozen preprocessing and split "
         "definitions are documented in REAL_DATA_RESULTS.md.", size=10)
     add_para(doc,
@@ -317,14 +389,19 @@ def build():
 
     # References
     add_heading(doc, "References")
-    add_para(doc, "[1] CICDDoS2019 dataset, Canadian Institute for Cybersecurity, "
-        "University of New Brunswick. https://www.unb.ca/cic/datasets/ddos-2019.html", size=9.5)
-    add_para(doc, "[2] Moustafa & Slay, UNSW-NB15, MilCIS 2015. Sharafaldin et al., CIC-IDS, "
-        "ICISSP 2018. (Public NIDS benchmarks.)", size=9.5)
-    add_para(doc, "[3] Liu, Ting & Zhou, Isolation Forest, ICDM 2008. Breunig et al., LOF, "
-        "SIGMOD 2000. Breiman, Random Forests, ML 2001.", size=9.5)
-    add_para(doc, "[4] Goldschmidt & Chud\u00e1, Network Intrusion Datasets: A Survey, 2025. "
-        "https://arxiv.org/abs/2502.06688", size=9.5)
+    add_para(doc, "[1] I. Sharafaldin et al. Developing Realistic Distributed Denial of "
+        "Service (DDoS) Attack Dataset and Taxonomy. ICCST, 2019. "
+        "doi:10.1109/CCST.2019.8888419.", size=9.5)
+    add_para(doc, "[2] Canadian Institute for Cybersecurity. CICDDoS2019 dataset, University "
+        "of New Brunswick. https://www.unb.ca/cic/datasets/ddos-2019.html", size=9.5)
+    add_para(doc, "[3] F. T. Liu, K. M. Ting, and Z.-H. Zhou. Isolation Forest. ICDM, 2008.", size=9.5)
+    add_para(doc, "[4] L. Breiman. Random Forests. Machine Learning 45, 5-32, 2001.", size=9.5)
+    add_para(doc, "[5] J. Gama et al. A Survey on Concept Drift Adaptation. ACM Computing "
+        "Surveys 46(4), 2014. doi:10.1145/2523813.", size=9.5)
+    add_para(doc, "[6] L. Bifet and R. Gavald\u00e0. Learning from Time-Changing Data with "
+        "Adaptive Windowing. SDM, 2007.", size=9.5)
+    add_para(doc, "[7] A. Hindy et al. A Taxonomy of Network Threats and the Effect of Current "
+        "Datasets on Intrusion Detection Systems. IEEE Access 8, 2020.", size=9.5)
 
     # Appendix - review questions
     add_heading(doc, "Appendix. Three review questions")
